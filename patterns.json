@@ -1,0 +1,235 @@
+[
+  {
+    "id": "tirets_longs",
+    "nom": "Tirets longs",
+    "famille": "typo",
+    "regex": "[—–]",
+    "conseil": "Remplacer par une virgule, un deux-points ou des parenthèses."
+  },
+  {
+    "id": "guillemets_typographiques",
+    "nom": "Guillemets typographiques",
+    "famille": "typo",
+    "regex": "[«»“”‘]|(?<![A-Za-zÀ-ÿœŒ])’|’(?![A-Za-zÀ-ÿœŒ])",
+    "brut": true,
+    "conseil": "Vérifier qu'ils sont cohérents dans tout le document et voulus à cet endroit."
+  },
+  {
+    "id": "gras_markdown",
+    "nom": "Gras markdown",
+    "famille": "typo",
+    "regex": "\\*\\*[^*\\n]+\\*\\*",
+    "conseil": "Retirer le gras hérité du markdown."
+  },
+  {
+    "id": "puces",
+    "nom": "Puces",
+    "famille": "typo",
+    "regex": "^\\s*[-*•]\\s+\\S",
+    "flags": "m",
+    "conseil": "Revenir à la phrase quand la liste n'apporte rien au lecteur."
+  },
+  {
+    "id": "titres",
+    "nom": "Intertitres",
+    "famille": "typo",
+    "regex": "^#{2,3}\\s",
+    "flags": "m",
+    "conseil": "Garder peu d'intertitres."
+  },
+  {
+    "id": "deux_points_explicatifs",
+    "nom": "Deux-points explicatifs",
+    "famille": "structure",
+    "regex": "(?<=[A-Za-zÀ-ÿœŒ]) : (?=[A-Za-zÀ-ÿœŒ0-9\\\"«])",
+    "conseil": "Remplacer « mot : explication » par une phrase complète."
+  },
+  {
+    "id": "tricolons",
+    "nom": "Séries « X, Y et Z »",
+    "famille": "structure",
+    "regex": ",\\s+[^,.;:!?\\n]{2,40}\\s+(?:et|ou)\\s+",
+    "conseil": "Trop de séries à trois temps font un rythme mécanique : en garder une sur deux."
+  },
+  {
+    "id": "series_longues",
+    "nom": "Énumérations de 4 termes et plus",
+    "famille": "structure",
+    "regex": "(?:[^,.;:!?\\n]{2,40},\\s+){3,}[^,.;:!?\\n]{2,40}",
+    "conseil": "Couper l'énumération, ou en faire une vraie liste si c'en est une."
+  },
+  {
+    "id": "anaphores",
+    "nom": "Anaphores « par X, par Y, par Z »",
+    "famille": "structure",
+    "regex": "\\b(par|pour|avec|sans|dans|sur|en|entre|chez|ce|qui|que)\\s[^,.;:!?\\n]{2,60},\\s+\\1\\s[^,.;:!?\\n]{2,60},\\s+\\1\\b",
+    "flags": "i",
+    "conseil": "Effet oratoire typique : garder un seul terme ou réécrire la phrase."
+  },
+  {
+    "id": "puis_puis",
+    "nom": "« puis…, puis… »",
+    "famille": "structure",
+    "regex": "\\bpuis\\b[^.!?\\n]{1,60}\\bpuis\\b",
+    "flags": "i",
+    "conseil": "Une étape par phrase, ou une phrase plus courte."
+  },
+  {
+    "id": "pas_x_mais_y",
+    "nom": "« pas X, mais Y »",
+    "famille": "structure",
+    "regex": "\\b(?:non pas|pas)\\b[^.,;:!?\\n]{2,60},?\\s+mais\\b",
+    "flags": "i",
+    "conseil": "Tournure que les lecteurs repèrent vite. Dire directement ce qui est."
+  },
+  {
+    "id": "ce_n_est_pas",
+    "nom": "« ce n'est pas…, c'est… »",
+    "famille": "structure",
+    "regex": "\\b(?:ne\\s+|n')(?:s'|se\\s)?\\w+\\s+pas\\b[^.\\n]{0,60},?\\s+(?:c'est|mais|il s'agit)",
+    "flags": "i",
+    "conseil": "Définition par la négation : affirmer directement."
+  },
+  {
+    "id": "comme_les_autres",
+    "nom": "« n'est pas un X comme les autres »",
+    "famille": "structure",
+    "regex": "\\b(?:n'|ne\\s)(?:est|sont)\\spas\\s(?:un|une|des)\\s[^.,;\\n]{2,40}\\scomme\\s(?:les|des)\\sautres",
+    "flags": "i",
+    "conseil": "Ouverture toute faite : commencer par un fait."
+  },
+  {
+    "id": "chute_pour_que",
+    "nom": "Chute en « , pour que… »",
+    "famille": "structure",
+    "regex": ",\\spour\\squ(?:e\\s|')[^.!?\\n]{3,100}[.!?]",
+    "flags": "i",
+    "conseil": "Fin de phrase qui justifie ou embellit : la couper, ou en faire une phrase à part."
+  },
+  {
+    "id": "devient_un_outil",
+    "nom": "« devient un outil de… »",
+    "famille": "structure",
+    "regex": "\\bdevien(?:t|nent|dra|dront)\\s(?:un|une|le|la|l')\\s?(?:vrai(?:e)?\\s)?(?:outil|levier|atout|moteur|pilier|alli[ée])",
+    "flags": "i",
+    "conseil": "Formule de conclusion : dire ce que fait l'objet, chiffre à l'appui si possible."
+  },
+  {
+    "id": "questions",
+    "nom": "Questions",
+    "famille": "structure",
+    "regex": "\\?",
+    "conseil": "Question rhétorique : la remplacer par l'affirmation."
+  },
+  {
+    "id": "appel_direct",
+    "nom": "Adresse au lecteur (vous, votre)",
+    "famille": "structure",
+    "regex": "\\b(?:vous|votre|vos)\\b",
+    "flags": "i",
+    "conseil": "Hors courrier, passer à l'impersonnel ou au « nous »."
+  },
+  {
+    "id": "imperatifs",
+    "nom": "Impératifs incitatifs",
+    "famille": "structure",
+    "regex": "^\\s*(?:ajoutez|creez|listez|testez|reformulez|auditez|remplacez|commencez|pensez|imaginez)\\b",
+    "flags": "mi",
+    "conseil": "Impératif en tête de ligne : reformuler en constat."
+  },
+  {
+    "id": "selon",
+    "nom": "« selon »",
+    "famille": "mot",
+    "regex": "\\bselon\\b",
+    "flags": "i",
+    "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+  },
+  {
+    "id": "il_faut",
+    "nom": "« il faut »",
+    "famille": "mot",
+    "regex": "\\bil faut\\b",
+    "flags": "i",
+    "conseil": "Dire qui fait quoi, ou supprimer."
+  },
+  {
+    "id": "vrai",
+    "nom": "« vrai, vraiment »",
+    "famille": "mot",
+    "regex": "\\bvrai(?:e|es|s|ment)?\\b",
+    "flags": "i",
+    "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+  },
+  {
+    "id": "signal",
+    "nom": "« signal, signaux »",
+    "famille": "mot",
+    "regex": "\\bsign(?:al|aux)\\b",
+    "flags": "i",
+    "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+  },
+  {
+    "id": "promesse",
+    "nom": "« promesse »",
+    "famille": "mot",
+    "regex": "\\bpromesse\\w*",
+    "flags": "i",
+    "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+  },
+  {
+    "id": "surtout",
+    "nom": "« surtout »",
+    "famille": "mot",
+    "regex": "\\bsurtout\\b",
+    "flags": "i",
+    "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+  },
+  {
+    "id": "concret",
+    "nom": "« concret, concrètement »",
+    "famille": "mot",
+    "regex": "\\bconcr[eè]t\\w*",
+    "flags": "i",
+    "conseil": "Donner l'exemple au lieu de l'annoncer."
+  },
+  {
+    "id": "utile",
+    "nom": "« utile, utilité »",
+    "famille": "mot",
+    "regex": "\\butil(?:e|es|ite|iser)\\b",
+    "flags": "i",
+    "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+  },
+  {
+    "id": "enjeu",
+    "nom": "« enjeu »",
+    "famille": "mot",
+    "regex": "\\benjeu\\w*",
+    "flags": "i",
+    "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+  },
+  {
+    "id": "de_x_a_y",
+    "nom": "« de X à Y »",
+    "famille": "structure",
+    "regex": "\\bde\\s+\\w+\\s+[aà]\\s+\\w+|\\b(?:du|de la|de l'|des)\\s(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\s(?:[aà]\\s(?:la\\s|l')|aux?\\s)",
+    "flags": "i",
+    "conseil": "« du premier clic à la commande » : nommer les étapes ou supprimer."
+  },
+  {
+    "id": "agent",
+    "nom": "« agent, agentique »",
+    "famille": "mot",
+    "regex": "\\bagent\\w*",
+    "flags": "i",
+    "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+  },
+  {
+    "id": "apostrophes_melangees",
+    "nom": "Apostrophes mélangées",
+    "famille": "typo",
+    "special": "apostrophes",
+    "conseil": "Droites et courbes dans le même texte : la frontière entre texte tapé et texte collé se voit. Remplacement global dans Word."
+  }
+]

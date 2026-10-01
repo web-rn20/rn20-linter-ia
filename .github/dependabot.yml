@@ -1,0 +1,14 @@
+# Actions de la CI epinglees par SHA : une PR mensuelle groupee, 7 jours apres
+# la sortie d'une version.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+      timezone: Europe/Paris
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]

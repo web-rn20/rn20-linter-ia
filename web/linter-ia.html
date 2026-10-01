@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Repère dans un texte en français les tournures que les lecteurs associent aux IA, avec pour chacune une façon de la reprendre. Le texte ne quitte pas le navigateur.">
+<title>Linter IA RN20</title>
+<style>
+  :root {
+    --papier: #eef1ef;
+    --feuille: #ffffff;
+    --encre: #1b2320;
+    --gris: #58635f;
+    --filet: #d5dcd9;
+    --accent: #2b55c4;
+    --accent-doux: #e3eafb;
+    --st-fond: #fbe2bd; --st-trait: #b0650a;
+    --mo-fond: #cdece6; --mo-trait: #0f7469;
+    --ty-fond: #ecdcf6; --ty-trait: #7f41ab;
+    --barre: #8a9591;
+    --serif: Charter, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --papier: #121715; --feuille: #1a201e; --encre: #e4ebe8; --gris: #9aa6a2;
+      --filet: #2d3633; --accent: #8fa9ff; --accent-doux: #222c45;
+      --st-fond: #4a3515; --st-trait: #f0b25a;
+      --mo-fond: #15403a; --mo-trait: #6fd2c4;
+      --ty-fond: #3a2949; --ty-trait: #c99cea;
+      --barre: #6d7874;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --papier: #121715; --feuille: #1a201e; --encre: #e4ebe8; --gris: #9aa6a2;
+    --filet: #2d3633; --accent: #8fa9ff; --accent-doux: #222c45;
+    --st-fond: #4a3515; --st-trait: #f0b25a;
+    --mo-fond: #15403a; --mo-trait: #6fd2c4;
+    --ty-fond: #3a2949; --ty-trait: #c99cea;
+    --barre: #6d7874;
+  }
+
+  body { background: var(--papier); color: var(--encre); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+  .page { max-width: 1200px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 40px); padding-block: 28px 40px; display: flex; flex-direction: column; gap: 24px; }
+
+  .tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 32px; border-bottom: 1px solid var(--filet); padding-bottom: 18px; }
+  .tete h1 { margin: 0; font-family: var(--serif); font-weight: 600; font-size: 30px; line-height: 1.1; letter-spacing: -0.01em; display: flex; align-items: baseline; gap: 10px; }
+  .tete h1 small { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; color: var(--gris); border: 1px solid var(--filet); border-radius: 3px; padding: 1px 6px; }
+  .chapeau { margin: 8px 0 0; max-width: 62ch; color: var(--gris); }
+  .confidentiel { margin: 0; font-size: 13px; color: var(--gris); display: flex; align-items: center; gap: 8px; }
+  .confidentiel::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--mo-trait); flex: none; }
+
+  .grille { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 32px; align-items: start; }
+
+  .barre-onglets { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; margin-bottom: 10px; }
+  .onglet { font: inherit; font-weight: 600; font-size: 14px; background: none; border: 0; padding: 6px 0; color: var(--gris); border-bottom: 2px solid transparent; cursor: pointer; }
+  .onglet[aria-selected="true"] { color: var(--encre); border-bottom-color: var(--encre); }
+  .actions { margin-left: auto; display: flex; gap: 14px; }
+  .lien { font: inherit; font-size: 13px; background: none; border: 0; padding: 4px 0; color: var(--accent); cursor: pointer; }
+  .lien:hover { text-decoration: underline; }
+  button:focus-visible, textarea:focus-visible, .epreuve:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .epreuve, #saisie {
+    box-sizing: border-box; width: 100%; background: var(--feuille); color: var(--encre);
+    border: 1px solid var(--filet); border-radius: 4px;
+    font-family: var(--serif); font-size: 17px; line-height: 1.7;
+    padding: clamp(18px, 3vw, 36px) clamp(18px, 4vw, 44px);
+  }
+  .epreuve { white-space: pre-wrap; overflow-wrap: anywhere; min-height: 320px; }
+  .epreuve > * { max-width: 70ch; }
+  #saisie { display: block; min-height: 60vh; resize: vertical; }
+  .vide { margin: 0; color: var(--gris); font-family: var(--sans); font-size: 15px; white-space: normal; }
+  .note-exemple { margin: 10px 0 0; font-size: 13px; color: var(--gris); }
+
+  mark.m { color: inherit; border-radius: 2px; padding: 0 1px; cursor: pointer; transition: background-color .15s; }
+  mark.f-structure { background: var(--st-fond); box-shadow: inset 0 -2px 0 var(--st-trait); }
+  mark.f-mot { background: var(--mo-fond); box-shadow: inset 0 -2px 0 var(--mo-trait); }
+  mark.f-typo { background: var(--ty-fond); box-shadow: inset 0 -2px 0 var(--ty-trait); }
+  .focus mark.m:not(.actif) { background: transparent; box-shadow: none; }
+  mark.courant { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .marge { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); max-height: calc(100vh - 32px); overflow-y: auto; display: flex; flex-direction: column; gap: 22px; padding-bottom: 4px; }
+  .score { display: flex; flex-direction: column; gap: 2px; padding-bottom: 16px; border-bottom: 1px solid var(--filet); }
+  .score-chiffre { margin: 0; display: flex; align-items: baseline; gap: 8px; }
+  .score-chiffre strong { font-family: var(--serif); font-size: 44px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .score-chiffre span { font-size: 15px; color: var(--gris); }
+  .densite { margin: 0; font-size: 13px; color: var(--gris); font-variant-numeric: tabular-nums; }
+  #btn-tout { align-self: flex-start; margin-top: 6px; }
+
+  .famille h2, .rythme h2 { margin: 0 0 6px; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--gris); }
+  .famille ul, .absents ul { list-style: none; margin: 0; padding: 0; }
+  .famille + .famille { margin-top: 16px; }
+  .motif { width: 100%; font: inherit; font-size: 14px; color: var(--encre); background: none; border: 0; border-radius: 4px; padding: 5px 6px; margin-inline: -6px; display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 10px; align-items: center; text-align: left; cursor: pointer; box-sizing: content-box; }
+  .motif:hover { background: var(--accent-doux); }
+  .motif.actif { background: var(--accent-doux); font-weight: 600; }
+  .pastille { width: 10px; height: 10px; border-radius: 2px; }
+  .f-structure .pastille { background: var(--st-trait); }
+  .f-mot .pastille { background: var(--mo-trait); }
+  .f-typo .pastille { background: var(--ty-trait); }
+  .compte { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--gris); }
+  .actif .compte { color: var(--encre); }
+  .conseil { margin: 4px 0 8px 20px; font-size: 13px; line-height: 1.45; color: var(--gris); }
+  .rien { margin: 0; color: var(--gris); }
+
+  .absents summary { font-size: 13px; color: var(--gris); cursor: pointer; }
+  .absents ul { margin-top: 8px; columns: 2; column-gap: 16px; font-size: 12.5px; color: var(--gris); }
+  .absents li { break-inside: avoid; padding: 1px 0; }
+
+  .rythme { border-top: 1px solid var(--filet); padding-top: 16px; }
+  .barres { height: 64px; display: flex; align-items: flex-end; gap: 2px; overflow-x: auto; border-bottom: 1px solid var(--filet); }
+  .barres span { flex: 1 0 3px; max-width: 14px; background: var(--barre); border-radius: 1px 1px 0 0; }
+  .rythme p { margin: 8px 0 0; font-size: 13px; color: var(--gris); font-variant-numeric: tabular-nums; }
+  .rythme p + p { font-size: 12.5px; }
+
+  .pied { border-top: 1px solid var(--filet); padding-top: 14px; font-size: 13px; color: var(--gris); max-width: 90ch; }
+  .pied p { margin: 0 0 6px; }
+  .visuellement-cache { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (max-width: 860px) {
+    .grille { grid-template-columns: minmax(0, 1fr); }
+    .marge { position: static; max-height: none; overflow: visible; }
+    .epreuve, #saisie { font-size: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { mark.m { transition: none; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="tete">
+    <div>
+      <h1>Linter IA <small>RN20</small></h1>
+      <p class="chapeau">Surligne dans un texte en français les tournures qu’un lecteur attribue à une IA, avec pour chacune la façon de la reprendre. Un mémoire, une proposition ou un article se relisent ici avant l’envoi.</p>
+    </div>
+    <p class="confidentiel">Le texte reste dans ce navigateur : rien n’est envoyé ni enregistré.</p>
+  </header>
+
+  <main class="grille">
+    <section aria-label="Texte relu">
+      <div class="barre-onglets" role="tablist">
+        <button type="button" role="tab" class="onglet" id="tab-relecture" aria-controls="relecture" aria-selected="true">Passages repérés</button>
+        <button type="button" role="tab" class="onglet" id="tab-saisie" aria-controls="zone-saisie" aria-selected="false">Texte</button>
+        <span class="actions">
+          <button type="button" class="lien" id="btn-exemple">Exemple</button>
+          <button type="button" class="lien" id="btn-effacer">Effacer</button>
+        </span>
+      </div>
+      <div id="zone-saisie" role="tabpanel" aria-labelledby="tab-saisie" hidden>
+        <label for="saisie" class="visuellement-cache">Texte à relire</label>
+        <textarea id="saisie" spellcheck="false" placeholder="Collez ici le texte à relire."></textarea>
+      </div>
+      <article id="relecture" role="tabpanel" aria-labelledby="tab-relecture" class="epreuve" tabindex="0"></article>
+      <p class="note-exemple" id="note-exemple">Texte d’exemple écrit pour montrer les motifs. Pour relire le vôtre, collez-le n’importe où sur la page (Cmd+V).</p>
+    </section>
+
+    <aside class="marge" aria-label="Bilan">
+      <div class="score">
+        <p class="score-chiffre"><strong id="total">0</strong><span id="total-libelle">repères</span></p>
+        <p class="densite" id="densite"></p>
+        <button type="button" class="lien" id="btn-tout" hidden>Revoir tous les repères</button>
+      </div>
+      <div id="familles"></div>
+      <details class="absents" id="absents">
+        <summary id="absents-titre">Motifs sans occurrence</summary>
+        <ul id="absents-liste"></ul>
+      </details>
+      <section class="rythme">
+        <h2>Rythme des phrases</h2>
+        <div class="barres" id="barres" aria-hidden="true"></div>
+        <p id="rythme-texte"></p>
+        <p>Une barre par phrase, à sa longueur. Des barres toutes de la même hauteur font un texte régulier, et cette régularité se remarque même quand aucun motif n’est surligné.</p>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="pied">
+    <p>Le linter compte les tournures qu’un lecteur remarque. Il ne dit pas qui a écrit le texte, et un texte sans repère peut rester plat.</p>
+    <p>Un outil de <a href="https://rn20.digital">RN20</a>, sous licence MIT. Code et motifs : <a href="https://github.com/web-rn20/rn20-linter-ia">github.com/web-rn20/rn20-linter-ia</a>.</p>
+  </footer>
+</div>
+
+<script type="text/plain" id="exemple">Le site de la fromagerie n’est pas un site vitrine comme les autres. Il doit porter la promesse d'un savoir-faire, pas seulement présenter des produits, mais raconter un territoire.
+
+Notre méthode repose sur trois temps : écouter, concevoir, livrer. Chaque étape fait l'objet d'une validation, puis d'un compte rendu, puis d'un archivage. Les maquettes se distinguent par la place donnée aux photos, par la densité de l'accueil, par le traitement des fiches produits.
+
+Un annuaire des affineurs bien tenu devient un outil de vente, pour que chaque visiteur trouve son fromage. Au fond, ce n'est pas un projet technique, c'est un projet humain. Concrètement, il faut penser le parcours du premier clic à la commande. Vous l'avez compris ?
+
+Le chantier démarre en mars. La fromagerie vend 40 % de sa production sur place et le reste part chez douze crémiers de la région. Le site actuel date de 2014 et ne s'affiche pas sur un téléphone.</script>
+<script type="application/json" id="motifs">[
+ {
+  "id": "tirets_longs",
+  "nom": "Tirets longs",
+  "famille": "typo",
+  "regex": "[—–]",
+  "conseil": "Remplacer par une virgule, un deux-points ou des parenthèses."
+ },
+ {
+  "id": "guillemets_typographiques",
+  "nom": "Guillemets typographiques",
+  "famille": "typo",
+  "regex": "[«»“”‘]|(?\u003c![A-Za-zÀ-ÿœŒ])’|’(?![A-Za-zÀ-ÿœŒ])",
+  "brut": true,
+  "conseil": "Vérifier qu'ils sont cohérents dans tout le document et voulus à cet endroit."
+ },
+ {
+  "id": "gras_markdown",
+  "nom": "Gras markdown",
+  "famille": "typo",
+  "regex": "\\*\\*[^*\\n]+\\*\\*",
+  "conseil": "Retirer le gras hérité du markdown."
+ },
+ {
+  "id": "puces",
+  "nom": "Puces",
+  "famille": "typo",
+  "regex": "^\\s*[-*•]\\s+\\S",
+  "flags": "m",
+  "conseil": "Revenir à la phrase quand la liste n'apporte rien au lecteur."
+ },
+ {
+  "id": "titres",
+  "nom": "Intertitres",
+  "famille": "typo",
+  "regex": "^#{2,3}\\s",
+  "flags": "m",
+  "conseil": "Garder peu d'intertitres."
+ },
+ {
+  "id": "deux_points_explicatifs",
+  "nom": "Deux-points explicatifs",
+  "famille": "structure",
+  "regex": "(?\u003c=[A-Za-zÀ-ÿœŒ]) : (?=[A-Za-zÀ-ÿœŒ0-9\\\"«])",
+  "conseil": "Remplacer « mot : explication » par une phrase complète."
+ },
+ {
+  "id": "tricolons",
+  "nom": "Séries « X, Y et Z »",
+  "famille": "structure",
+  "regex": ",\\s+[^,.;:!?\\n]{2,40}\\s+(?:et|ou)\\s+",
+  "conseil": "Trop de séries à trois temps font un rythme mécanique : en garder une sur deux."
+ },
+ {
+  "id": "series_longues",
+  "nom": "Énumérations de 4 termes et plus",
+  "famille": "structure",
+  "regex": "(?:[^,.;:!?\\n]{2,40},\\s+){3,}[^,.;:!?\\n]{2,40}",
+  "conseil": "Couper l'énumération, ou en faire une vraie liste si c'en est une."
+ },
+ {
+  "id": "anaphores",
+  "nom": "Anaphores « par X, par Y, par Z »",
+  "famille": "structure",
+  "regex": "\\b(par|pour|avec|sans|dans|sur|en|entre|chez|ce|qui|que)\\s[^,.;:!?\\n]{2,60},\\s+\\1\\s[^,.;:!?\\n]{2,60},\\s+\\1\\b",
+  "flags": "i",
+  "conseil": "Effet oratoire typique : garder un seul terme ou réécrire la phrase."
+ },
+ {
+  "id": "puis_puis",
+  "nom": "« puis…, puis… »",
+  "famille": "structure",
+  "regex": "\\bpuis\\b[^.!?\\n]{1,60}\\bpuis\\b",
+  "flags": "i",
+  "conseil": "Une étape par phrase, ou une phrase plus courte."
+ },
+ {
+  "id": "pas_x_mais_y",
+  "nom": "« pas X, mais Y »",
+  "famille": "structure",
+  "regex": "\\b(?:non pas|pas)\\b[^.,;:!?\\n]{2,60},?\\s+mais\\b",
+  "flags": "i",
+  "conseil": "Tournure que les lecteurs repèrent vite. Dire directement ce qui est."
+ },
+ {
+  "id": "ce_n_est_pas",
+  "nom": "« ce n'est pas…, c'est… »",
+  "famille": "structure",
+  "regex": "\\b(?:ne\\s+|n')(?:s'|se\\s)?\\w+\\s+pas\\b[^.\\n]{0,60},?\\s+(?:c'est|mais|il s'agit)",
+  "flags": "i",
+  "conseil": "Définition par la négation : affirmer directement."
+ },
+ {
+  "id": "comme_les_autres",
+  "nom": "« n'est pas un X comme les autres »",
+  "famille": "structure",
+  "regex": "\\b(?:n'|ne\\s)(?:est|sont)\\spas\\s(?:un|une|des)\\s[^.,;\\n]{2,40}\\scomme\\s(?:les|des)\\sautres",
+  "flags": "i",
+  "conseil": "Ouverture toute faite : commencer par un fait."
+ },
+ {
+  "id": "chute_pour_que",
+  "nom": "Chute en « , pour que… »",
+  "famille": "structure",
+  "regex": ",\\spour\\squ(?:e\\s|')[^.!?\\n]{3,100}[.!?]",
+  "flags": "i",
+  "conseil": "Fin de phrase qui justifie ou embellit : la couper, ou en faire une phrase à part."
+ },
+ {
+  "id": "devient_un_outil",
+  "nom": "« devient un outil de… »",
+  "famille": "structure",
+  "regex": "\\bdevien(?:t|nent|dra|dront)\\s(?:un|une|le|la|l')\\s?(?:vrai(?:e)?\\s)?(?:outil|levier|atout|moteur|pilier|alli[ée])",
+  "flags": "i",
+  "conseil": "Formule de conclusion : dire ce que fait l'objet, chiffre à l'appui si possible."
+ },
+ {
+  "id": "questions",
+  "nom": "Questions",
+  "famille": "structure",
+  "regex": "\\?",
+  "conseil": "Question rhétorique : la remplacer par l'affirmation."
+ },
+ {
+  "id": "appel_direct",
+  "nom": "Adresse au lecteur (vous, votre)",
+  "famille": "structure",
+  "regex": "\\b(?:vous|votre|vos)\\b",
+  "flags": "i",
+  "conseil": "Hors courrier, passer à l'impersonnel ou au « nous »."
+ },
+ {
+  "id": "imperatifs",
+  "nom": "Impératifs incitatifs",
+  "famille": "structure",
+  "regex": "^\\s*(?:ajoutez|creez|listez|testez|reformulez|auditez|remplacez|commencez|pensez|imaginez)\\b",
+  "flags": "mi",
+  "conseil": "Impératif en tête de ligne : reformuler en constat."
+ },
+ {
+  "id": "selon",
+  "nom": "« selon »",
+  "famille": "mot",
+  "regex": "\\bselon\\b",
+  "flags": "i",
+  "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+ },
+ {
+  "id": "il_faut",
+  "nom": "« il faut »",
+  "famille": "mot",
+  "regex": "\\bil faut\\b",
+  "flags": "i",
+  "conseil": "Dire qui fait quoi, ou supprimer."
+ },
+ {
+  "id": "vrai",
+  "nom": "« vrai, vraiment »",
+  "famille": "mot",
+  "regex": "\\bvrai(?:e|es|s|ment)?\\b",
+  "flags": "i",
+  "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+ },
+ {
+  "id": "signal",
+  "nom": "« signal, signaux »",
+  "famille": "mot",
+  "regex": "\\bsign(?:al|aux)\\b",
+  "flags": "i",
+  "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+ },
+ {
+  "id": "promesse",
+  "nom": "« promesse »",
+  "famille": "mot",
+  "regex": "\\bpromesse\\w*",
+  "flags": "i",
+  "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+ },
+ {
+  "id": "surtout",
+  "nom": "« surtout »",
+  "famille": "mot",
+  "regex": "\\bsurtout\\b",
+  "flags": "i",
+  "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+ },
+ {
+  "id": "concret",
+  "nom": "« concret, concrètement »",
+  "famille": "mot",
+  "regex": "\\bconcr[eè]t\\w*",
+  "flags": "i",
+  "conseil": "Donner l'exemple au lieu de l'annoncer."
+ },
+ {
+  "id": "utile",
+  "nom": "« utile, utilité »",
+  "famille": "mot",
+  "regex": "\\butil(?:e|es|ite|iser)\\b",
+  "flags": "i",
+  "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+ },
+ {
+  "id": "enjeu",
+  "nom": "« enjeu »",
+  "famille": "mot",
+  "regex": "\\benjeu\\w*",
+  "flags": "i",
+  "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+ },
+ {
+  "id": "de_x_a_y",
+  "nom": "« de X à Y »",
+  "famille": "structure",
+  "regex": "\\bde\\s+\\w+\\s+[aà]\\s+\\w+|\\b(?:du|de la|de l'|des)\\s(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\s(?:[aà]\\s(?:la\\s|l')|aux?\\s)",
+  "flags": "i",
+  "conseil": "« du premier clic à la commande » : nommer les étapes ou supprimer."
+ },
+ {
+  "id": "agent",
+  "nom": "« agent, agentique »",
+  "famille": "mot",
+  "regex": "\\bagent\\w*",
+  "flags": "i",
+  "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+ },
+ {
+  "id": "apostrophes_melangees",
+  "nom": "Apostrophes mélangées",
+  "famille": "typo",
+  "special": "apostrophes",
+  "conseil": "Droites et courbes dans le même texte : la frontière entre texte tapé et texte collé se voit. Remplacement global dans Word."
+ }
+]</script>
+<script>// Moteur du linter pour la page web : meme logique que linter_ia.py, memes
+// motifs (patterns.json). Aucun acces au DOM ni au reseau. Charge tel quel par
+// node dans tests/test_linter.py, qui verifie que le script et la page trouvent
+// les memes passages aux memes positions.
+(function (exporter) {
+  "use strict";
+  var L = "A-Za-zÀ-ÿœŒ";
+  var MOT = "[" + L + "0-9_]";
+  // \b et \w sont ASCII en JavaScript, Unicode en Python : on les remplace
+  var LIMITE = "(?:(?<=" + MOT + ")(?!" + MOT + ")|(?<!" + MOT + ")(?=" + MOT + "))";
+  var APOS_COURBE = new RegExp("(?<=[" + L + "])’(?=[" + L + "])", "g");
+  var APOS_DROITE = new RegExp("(?<=[" + L + "])'(?=[" + L + "])", "g");
+  var PHRASES_MIN_RYTHME = 5;
+
+  function compiler(motifs) {
+    return motifs.map(function (m) {
+      if (!m.regex) return m;
+      var src = m.regex.replace(/\\b/g, LIMITE).replace(/\\w/g, MOT);
+      return Object.assign({}, m, { rx: new RegExp(src, "g" + (m.flags || "")) });
+    });
+  }
+
+  function positions(rx, texte) {
+    var out = [];
+    for (var m of texte.matchAll(rx)) out.push({ debut: m.index, fin: m.index + m[0].length });
+    return out;
+  }
+
+  function occurrences(texte, motifs) {
+    var n = texte.replace(/’/g, "'");
+    var occ = {};
+    motifs.forEach(function (m) {
+      if (m.special === "apostrophes") {
+        // on signale le type minoritaire, comme le script
+        var c = positions(APOS_COURBE, texte), d = positions(APOS_DROITE, texte);
+        occ[m.id] = c.length && d.length ? (c.length <= d.length ? c : d) : [];
+      } else {
+        occ[m.id] = positions(m.rx, m.brut ? texte : n);
+      }
+    });
+    return occ;
+  }
+
+  function rythme(texte) {
+    var phrases = texte.replace(/\s+/g, " ").split(/(?<=[.!?])\s+/).filter(function (p) {
+      return p.trim().split(/\s+/).filter(Boolean).length > 2;
+    });
+    if (phrases.length < PHRASES_MIN_RYTHME) return null;
+    var lg = phrases.map(function (p) { return p.trim().split(/\s+/).length; });
+    var moy = lg.reduce(function (a, b) { return a + b; }, 0) / lg.length;
+    var variance = lg.reduce(function (a, b) { return a + (b - moy) * (b - moy); }, 0) / lg.length;
+    return { phrases: lg.length, longueurs: lg, moyenne: moy, ecartType: Math.sqrt(variance) };
+  }
+
+  exporter({ compiler: compiler, occurrences: occurrences, rythme: rythme });
+})(typeof module !== "undefined"
+  ? function (api) { module.exports = api; }
+  : function (api) { window.LinterIA = api; });
+</script>
+<script>
+(function () {
+  "use strict";
+  var API = window.LinterIA;
+  var MOTIFS = API.compiler(JSON.parse(document.getElementById("motifs").textContent));
+  var PAR_ID = {};
+  MOTIFS.forEach(function (m) { PAR_ID[m.id] = m; });
+  var FAMILLES = [
+    { id: "structure", nom: "Tournures" },
+    { id: "mot", nom: "Mots-béquilles" },
+    { id: "typo", nom: "Typographie" }
+  ];
+  function $(id) { return document.getElementById(id); }
+  var EXEMPLE = $("exemple").textContent;
+  var saisie = $("saisie"), relecture = $("relecture");
+  var etat = { texte: "", occ: {}, choisi: null, rang: 0 };
+  var nombre = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
+  var reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function echapper(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function analyser() {
+    etat.texte = saisie.value;
+    etat.occ = API.occurrences(etat.texte, MOTIFS);
+    if (etat.choisi && !etat.occ[etat.choisi].length) etat.choisi = null;
+    etat.rang = 0;
+    rendreTexte();
+    rendreBilan();
+    rendreRythme();
+    $("note-exemple").hidden = etat.texte !== EXEMPLE;
+  }
+
+  // Le texte est decoupe aux bornes de chaque occurrence ; chaque morceau couvert
+  // devient un <mark> qui porte tous les motifs qui le couvrent. Tout est echappe.
+  function rendreTexte() {
+    var t = etat.texte;
+    if (!t.trim()) {
+      relecture.innerHTML = '<p class="vide">Aucun texte pour l’instant. Collez-en un n’importe où sur la page, ou dans l’onglet Texte.</p>';
+      return;
+    }
+    var occs = [], bornes = [0, t.length];
+    MOTIFS.forEach(function (m) {
+      etat.occ[m.id].forEach(function (o) {
+        occs.push({ id: m.id, debut: o.debut, fin: o.fin });
+        bornes.push(o.debut, o.fin);
+      });
+    });
+    bornes = Array.from(new Set(bornes)).sort(function (a, b) { return a - b; });
+    var html = "";
+    for (var i = 0; i < bornes.length - 1; i++) {
+      var a = bornes[i], z = bornes[i + 1], seg = t.slice(a, z);
+      var couvrants = occs.filter(function (o) { return o.debut <= a && o.fin >= z; });
+      if (!couvrants.length) { html += echapper(seg); continue; }
+      // le motif le plus court donne la couleur : c'est le plus precis
+      couvrants.sort(function (x, y) { return (x.fin - x.debut) - (y.fin - y.debut); });
+      var ids = [];
+      couvrants.forEach(function (o) { if (ids.indexOf(o.id) < 0) ids.push(o.id); });
+      var titre = ids.map(function (id) { return PAR_ID[id].nom; }).join(" · ");
+      html += '<mark class="m f-' + PAR_ID[ids[0]].famille + '" data-ids="' + ids.join(" ") +
+        '" data-debut="' + a + '" title="' + echapper(titre) + '">' + echapper(seg) + "</mark>";
+    }
+    relecture.innerHTML = html;
+    appliquerChoix(false);
+  }
+
+  function rendreBilan() {
+    var total = 0, absents = [], parFamille = {};
+    MOTIFS.forEach(function (m) {
+      var n = etat.occ[m.id].length;
+      total += n;
+      if (!n) { absents.push(m); return; }
+      (parFamille[m.famille] = parFamille[m.famille] || []).push({ m: m, n: n });
+    });
+    var mots = (etat.texte.match(/\S+/g) || []).length;
+    $("total").textContent = total;
+    $("total-libelle").textContent = total > 1 ? "repères" : "repère";
+    $("densite").textContent = mots ? nombre.format(total / mots * 100) + " pour 100 mots, sur " + mots + " mots" : "";
+    var html = "";
+    FAMILLES.forEach(function (f) {
+      var liste = parFamille[f.id];
+      if (!liste) return;
+      liste.sort(function (a, b) { return b.n - a.n; });
+      html += '<section class="famille"><h2>' + f.nom + "</h2><ul>";
+      liste.forEach(function (x) {
+        var actif = etat.choisi === x.m.id;
+        html += '<li><button type="button" class="motif f-' + x.m.famille + (actif ? " actif" : "") +
+          '" data-id="' + x.m.id + '" aria-pressed="' + actif + '">' +
+          '<span class="pastille" aria-hidden="true"></span><span class="nom">' + echapper(x.m.nom) +
+          '</span><span class="compte">' + (actif ? (etat.rang + 1) + "/" : "") + x.n + "</span></button>" +
+          (actif ? '<p class="conseil">' + echapper(x.m.conseil) + "</p>" : "") + "</li>";
+      });
+      html += "</ul></section>";
+    });
+    $("familles").innerHTML = total ? html : '<p class="rien">Aucun motif repéré.</p>';
+    $("absents-titre").textContent = "Motifs sans occurrence (" + absents.length + ")";
+    $("absents-liste").innerHTML = absents.map(function (m) { return "<li>" + echapper(m.nom) + "</li>"; }).join("");
+    $("absents").hidden = !absents.length;
+    $("btn-tout").hidden = !etat.choisi;
+  }
+
+  function rendreRythme() {
+    var r = API.rythme(etat.texte);
+    if (!r) {
+      $("barres").innerHTML = "";
+      $("rythme-texte").textContent = "Mesurable à partir de cinq phrases.";
+      return;
+    }
+    var max = Math.max(40, Math.max.apply(null, r.longueurs));
+    $("barres").innerHTML = r.longueurs.map(function (n) {
+      return '<span style="height:' + Math.max(4, Math.round(n / max * 100)) + '%"></span>';
+    }).join("");
+    $("rythme-texte").textContent = r.phrases + " phrases, " + nombre.format(r.moyenne) +
+      " mots en moyenne, écart-type " + nombre.format(r.ecartType) + ".";
+  }
+
+  function appliquerChoix(defiler) {
+    var choisi = etat.choisi;
+    relecture.classList.toggle("focus", !!choisi);
+    var o = choisi ? etat.occ[choisi][etat.rang] : null;
+    var premier = null;
+    relecture.querySelectorAll("mark").forEach(function (mk) {
+      var porte = !!choisi && mk.dataset.ids.split(" ").indexOf(choisi) >= 0;
+      var debut = +mk.dataset.debut;
+      var courant = porte && debut >= o.debut && debut < o.fin;
+      mk.classList.toggle("actif", porte);
+      mk.classList.toggle("courant", courant);
+      if (courant && !premier) premier = mk;
+    });
+    if (premier && defiler) premier.scrollIntoView({ block: "center", behavior: reduit ? "auto" : "smooth" });
+  }
+
+  function choisir(id, rang) {
+    etat.choisi = id;
+    etat.rang = rang;
+    rendreBilan();
+    appliquerChoix(true);
+  }
+
+  function montrer(onglet) {
+    var rel = onglet === "relecture";
+    $("tab-relecture").setAttribute("aria-selected", String(rel));
+    $("tab-saisie").setAttribute("aria-selected", String(!rel));
+    relecture.hidden = !rel;
+    $("zone-saisie").hidden = rel;
+    if (!rel) saisie.focus();
+  }
+
+  $("familles").addEventListener("click", function (e) {
+    var b = e.target.closest("button.motif");
+    if (!b) return;
+    var id = b.dataset.id;
+    montrer("relecture");
+    if (etat.choisi === id) choisir(id, (etat.rang + 1) % etat.occ[id].length);
+    else choisir(id, 0);
+    var nouveau = $("familles").querySelector('button[data-id="' + id + '"]');
+    if (nouveau) nouveau.focus();
+  });
+
+  relecture.addEventListener("click", function (e) {
+    var mk = e.target.closest("mark");
+    if (!mk) return;
+    var pos = +mk.dataset.debut, ids = mk.dataset.ids.split(" ");
+    var id = etat.choisi && ids.indexOf(etat.choisi) >= 0 ? etat.choisi : ids[0];
+    var rang = etat.occ[id].findIndex(function (o) { return o.debut <= pos && o.fin > pos; });
+    etat.choisi = id;
+    etat.rang = Math.max(0, rang);
+    rendreBilan();
+    appliquerChoix(false);
+  });
+
+  function toutRevoir() {
+    etat.choisi = null;
+    rendreBilan();
+    appliquerChoix(false);
+  }
+  $("btn-tout").addEventListener("click", toutRevoir);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && etat.choisi) toutRevoir(); });
+
+  $("tab-relecture").addEventListener("click", function () { montrer("relecture"); });
+  $("tab-saisie").addEventListener("click", function () { montrer("saisie"); });
+  $("btn-exemple").addEventListener("click", function () { saisie.value = EXEMPLE; analyser(); montrer("relecture"); });
+  $("btn-effacer").addEventListener("click", function () { saisie.value = ""; analyser(); montrer("saisie"); });
+
+  var minuterie;
+  saisie.addEventListener("input", function () { clearTimeout(minuterie); minuterie = setTimeout(analyser, 200); });
+  // Cmd+V n'importe ou sur la page remplace le texte et affiche les passages
+  document.addEventListener("paste", function (e) {
+    if (e.target === saisie) { setTimeout(function () { analyser(); montrer("relecture"); }, 0); return; }
+    var colle = e.clipboardData && e.clipboardData.getData("text/plain");
+    if (!colle) return;
+    e.preventDefault();
+    saisie.value = colle;
+    analyser();
+    montrer("relecture");
+  });
+
+  saisie.value = EXEMPLE;
+  analyser();
+})();
+</script>
+</body>
+</html>

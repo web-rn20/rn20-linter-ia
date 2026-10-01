@@ -1,0 +1,29 @@
+# secrets (le depot n'en a aucun, la regle est posee quand meme)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# dumps et sauvegardes
+*.sql
+*.dump
+*.bak
+*.backup
+*.orig
+
+# textes analyses : un memoire ou un devis passe au linter ne se commite pas
+*.docx
+*.doc
+*.pdf
+local/
+
+# systeme et Python
+.DS_Store
+__pycache__/
+*.pyc
+
+# corps de page genere par build_web.py --artifact
+dist/
