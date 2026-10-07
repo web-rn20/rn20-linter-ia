@@ -82,7 +82,7 @@ Les motifs viennent de relectures de textes réels et de catalogues publics, rec
 
 Deux motifs, les connecteurs en tête de phrase (« En outre », « Par ailleurs ») et « également » ou « notamment », ne sortent qu'au-delà d'une densité : un seul n'a rien de suspect, leur accumulation l'est. Les seuils actuels sont provisoires et seront calés sur un corpus.
 
-Un indicateur de rythme complète le décompte. Il mesure la longueur des phrases et son écart-type, car une suite de phrases de même longueur se remarque même quand aucun motif ne sort. Il reste hors du total.
+Deux indicateurs complètent le décompte et restent hors du total. Le rythme mesure la longueur des phrases et son écart-type, car une suite de phrases de même longueur se remarque même quand aucun motif ne sort. L'ancrage compte les chiffres et les noms propres pour 1000 mots, avec la longueur des paragraphes et les chutes, ces paragraphes d'une phrase courte posés après un long pour l'effet. Un brouillon généré qu'on a enrichi de dates, de montants et de noms se lit beaucoup moins comme tel qu'un texte resté général, même retouché phrase par phrase.
 
 ## Ce qu'il ne dit pas
 

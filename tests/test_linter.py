@@ -40,6 +40,7 @@ ATTENDUS = {
         "questions": 1, "appel_direct": 1, "il_faut": 1, "promesse": 1, "concret": 1,
         "de_x_a_y": 1, "apostrophes_melangees": 1,
     },
+    "paragraphes-et-ancrage.md": {"puces": 1, "titres": 1},
     "texte-sobre.md": {"tricolons": 1, "surtout": 1},
     "tics-generation.md": {
         "residus_conversation": 2, "residus_techniques": 5, "pictogrammes": 5, "filets": 1,
@@ -90,6 +91,18 @@ class Lecture(unittest.TestCase):
             with open(chemin, "w", encoding="utf-8-sig") as f:
                 f.write("Texte.")
             self.assertEqual(linter_ia.lire(chemin), "Texte.")
+
+class Ancrage(unittest.TestCase):
+    def test_chiffres_noms_et_chute(self):
+        texte = linter_ia.lire(os.path.join(FIX, "paragraphes-et-ancrage.md"))
+        a, p = linter_ia.ancrage(texte), linter_ia.paragraphes(texte)
+        self.assertEqual((a.chiffres, a.noms_propres), (5, 6))
+        self.assertEqual((p.nombre, p.chutes), (3, 1))
+
+    def test_texte_court_sans_mesure(self):
+        self.assertIsNone(linter_ia.ancrage("Le chai ouvre à Gaillac le 2 septembre."))
+        self.assertIsNone(linter_ia.paragraphes("Un.\n\nDeux."))
+
 
 class Exclusions(unittest.TestCase):
     def test_off_cible_et_texte_du_commentaire(self):
@@ -237,8 +250,10 @@ const car = (t, i) => Array.from(t.slice(0, i)).length;
 const out = {};
 for (const [nom, t] of Object.entries(textes)) {
   const occ = api.occurrences(t, motifs);
-  const r = api.rythme(t);
+  const r = api.rythme(t), a = api.ancrage(t), p = api.paragraphes(t);
   out[nom] = {
+    ancrage: a && [a.chiffres, a.nomsPropres],
+    paragraphes: p && [p.nombre, p.moyenne, p.ecartType, p.chutes],
     occ: Object.fromEntries(Object.entries(occ).map(([k, v]) => [k, v.map(o => [car(t, o.debut), car(t, o.fin)])])),
     rythme: r && [r.phrases, r.moyenne, r.ecartType],
   };
@@ -257,6 +272,16 @@ console.log(JSON.stringify(out));
             for m in MOTIFS:
                 with self.subTest(fixture=nom, motif=m["id"]):
                     self.assertEqual([[o.start(), o.end()] for o in occ[m["id"]]], js[nom]["occ"][m["id"]])
+            a, p = linter_ia.ancrage(texte), linter_ia.paragraphes(texte)
+            with self.subTest(fixture=nom, ancrage=True):
+                self.assertEqual(a and [a.chiffres, a.noms_propres], js[nom]["ancrage"])
+            with self.subTest(fixture=nom, paragraphes=True):
+                if p is None:
+                    self.assertIsNone(js[nom]["paragraphes"])
+                else:
+                    self.assertEqual([p.nombre, p.chutes], [js[nom]["paragraphes"][0], js[nom]["paragraphes"][3]])
+                    self.assertAlmostEqual(p.moyenne, js[nom]["paragraphes"][1])
+                    self.assertAlmostEqual(p.ecart_type, js[nom]["paragraphes"][2])
             r = linter_ia.rythme(texte)
             with self.subTest(fixture=nom, rythme=True):
                 if r is None:

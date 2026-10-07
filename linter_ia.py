@@ -47,10 +47,20 @@ DRAPEAUX = {"i": re.IGNORECASE, "m": re.MULTILINE, "u": 0}
 APOS_COURBE = re.compile(rf"(?<=[{LETTRES}])’(?=[{LETTRES}])")
 APOS_DROITE = re.compile(rf"(?<=[{LETTRES}])'(?=[{LETTRES}])")
 # Blancs comptes de la meme facon que web/moteur.js : \s differe entre les deux langages
-MOT = re.compile(r"[^ \t\n\r\f\v   -     　]+")
+MOT = re.compile(r"[^ \t\n\r\f\v\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+")
 DIRECTIVE = re.compile(r"<!--[ \t]*linter-ia[ \t]+(off|on)((?:[ \t]+[a-z0-9_]+)*)[ \t]*-->", re.I)
 # Un motif a seuil ("densite_max", pour 1000 mots) ne sort qu'a partir de deux occurrences
 MIN_OCCURRENCES_DENSITE = 2
+
+# Ancrage : memes classes que web/moteur.js, sans \d ni \w qui different d'un langage a l'autre
+# "1 200" compte pour un nombre : espace suivie de trois chiffres exactement
+CHIFFRE = re.compile(r"[0-9]+(?:[.,\u00a0\u202f][0-9]+| [0-9]{3}(?![0-9]))*")
+NOM_PROPRE = re.compile(
+    rf"(?:(?<=[{LETTRES}0-9,;)][ \u00a0])|(?<=[{LETTRES}]'))[A-ZÀ-ÖØ-ÞŒ][{LETTRES}0-9-]*")
+MOTS_MIN_ANCRAGE = 100
+PARAGRAPHES_MIN = 3
+CHUTE_APRES = 40
+CHUTE_MOTS = 8
 
 PHRASES_MIN_RYTHME = 5
 LARGEUR_COLONNE = 11
@@ -68,6 +78,25 @@ class Rythme(NamedTuple):
     phrases: int
     moyenne: float
     ecart_type: float
+
+
+class Ancrage(NamedTuple):
+    """Faits situes : chiffres et noms propres, pour 1000 mots."""
+
+    mots: int
+    chiffres: int
+    noms_propres: int
+    chiffres_pour_1000: float
+    noms_pour_1000: float
+
+
+class Paragraphes(NamedTuple):
+    """Longueur des paragraphes, en mots, et chutes d'une phrase courte."""
+
+    nombre: int
+    moyenne: float
+    ecart_type: float
+    chutes: int
 
 
 class Directive(NamedTuple):
@@ -307,6 +336,42 @@ def rythme(texte: str) -> Optional[Rythme]:
     return Rythme(len(longueurs), float(statistics.mean(longueurs)), statistics.pstdev(longueurs))
 
 
+def ancrage(texte: str) -> Optional[Ancrage]:
+    """Chiffres et noms propres pour 1000 mots, ou None sous cent mots.
+
+    Un texte qui ne donne ni date, ni nombre, ni nom reste en surplomb, et c'est
+    ce qui le fait lire comme genere. Un nom propre est un mot a majuscule qui
+    n'ouvre pas une phrase. L'indicateur reste hors du total des reperes.
+    """
+    mots = compter_mots(texte)
+    if mots < MOTS_MIN_ANCRAGE:
+        return None
+    chiffres = len(CHIFFRE.findall(texte))
+    noms = len(NOM_PROPRE.findall(texte.replace("’", "'")))
+    return Ancrage(mots, chiffres, noms, chiffres * 1000 / mots, noms * 1000 / mots)
+
+
+def paragraphes(texte: str) -> Optional[Paragraphes]:
+    """Longueur des paragraphes et chutes, ou None sous trois paragraphes.
+
+    Une chute est un paragraphe d'une phrase de moins de huit mots qui suit un
+    paragraphe d'au moins quarante mots : l'effet de clausule des textes
+    generes. Les intertitres et les listes ne comptent pas comme paragraphes.
+    """
+    blocs = [b for b in re.split(r"\n[ \t]*\n", texte)
+             if compter_mots(b) and not re.match(r"[ \t\n\r]*(?:#|[-*•][ \t])", b)]
+    if len(blocs) < PARAGRAPHES_MIN:
+        return None
+    longueurs = [compter_mots(b) for b in blocs]
+    chutes = sum(
+        1 for avant, n, bloc in zip(longueurs, longueurs[1:], blocs[1:])
+        if avant >= CHUTE_APRES and n < CHUTE_MOTS
+        and len([p for p in re.split(r"(?<=[.!?])\s+", bloc.strip()) if p]) == 1
+    )
+    return Paragraphes(len(longueurs), float(statistics.mean(longueurs)),
+                       statistics.pstdev(longueurs), chutes)
+
+
 def extrait(texte: str, debut: int, fin: int, marge: int = MARGE_EXTRAIT) -> str:
     """Passage sur une ligne, l'occurrence entre crochets dans son contexte."""
     def aplatir(s: str) -> str:
@@ -361,6 +426,14 @@ def afficher_bilans(noms: list[str], textes: list[str], bilans: list[dict], conf
         if r:
             print(f"rythme {nom} : {r.phrases} phrases, {r.moyenne:.0f} mots en moyenne, "
                   f"ecart-type {r.ecart_type:.0f} (plus il est faible, plus le texte est regulier)")
+        a = ancrage(texte)
+        if a:
+            print(f"ancrage {nom} : {a.chiffres_pour_1000:.0f} chiffres et {a.noms_pour_1000:.0f} noms propres "
+                  f"pour 1000 mots (plus ils sont rares, plus le texte reste en surplomb)")
+        p = paragraphes(texte)
+        if p:
+            print(f"paragraphes {nom} : {p.nombre}, {p.moyenne:.0f} mots en moyenne, ecart-type "
+                  f"{p.ecart_type:.0f}, {p.chutes} chute(s) d'une phrase courte apres un long paragraphe")
         if config:
             print(f"config {nom} : {config.chemin}")
 
@@ -383,10 +456,12 @@ def en_json(noms: list[str], textes: list[str], resultats: list[dict], bilans: l
                     "texte": source[o.start():o.end()], "conseil": motif["conseil"],
                 })
         occ.sort(key=lambda x: (x["debut"], x["fin"]))
-        r = rythme(texte)
+        r, a, p = rythme(texte), ancrage(texte), paragraphes(texte)
         sortie.append(dict(
             fichier=nom, **b,
             rythme=r._asdict() if r else None,
+            ancrage=a._asdict() if a else None,
+            paragraphes=p._asdict() if p else None,
             config=config.chemin if config else None,
             occurrences=occ,
         ))

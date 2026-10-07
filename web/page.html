@@ -108,11 +108,14 @@
   .absents ul { margin-top: 8px; columns: 2; column-gap: 16px; font-size: 12.5px; color: var(--gris); }
   .absents li { break-inside: avoid; padding: 1px 0; }
 
-  .rythme { border-top: 1px solid var(--filet); padding-top: 16px; }
+  .rythme, .ancrage { border-top: 1px solid var(--filet); padding-top: 16px; }
   .barres { height: 64px; display: flex; align-items: flex-end; gap: 2px; overflow-x: auto; border-bottom: 1px solid var(--filet); }
   .barres span { flex: 1 0 3px; max-width: 14px; background: var(--barre); border-radius: 1px 1px 0 0; }
   .rythme p { margin: 8px 0 0; font-size: 13px; color: var(--gris); font-variant-numeric: tabular-nums; }
   .rythme p + p { font-size: 12.5px; }
+  .ancrage h2 { margin: 0 0 6px; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--gris); }
+  .ancrage p { margin: 6px 0 0; font-size: 13px; color: var(--gris); font-variant-numeric: tabular-nums; }
+  .ancrage p:last-child { font-size: 12.5px; }
 
   .pied { border-top: 1px solid var(--filet); padding-top: 14px; font-size: 13px; color: var(--gris); max-width: 90ch; }
   .pied p { margin: 0 0 6px; }
@@ -170,6 +173,12 @@
         <p id="rythme-texte"></p>
         <p>Une barre par phrase, à sa longueur. Des barres toutes de la même hauteur font un texte régulier, et cette régularité se remarque même quand aucun motif n’est surligné.</p>
       </section>
+      <section class="ancrage">
+        <h2>Ancrage</h2>
+        <p id="ancrage-faits"></p>
+        <p id="ancrage-paragraphes"></p>
+        <p>Chiffres, dates et noms situent un texte ; sans eux, il reste en surplomb et se lit comme généré. Une chute est un paragraphe d’une phrase courte posé après un long paragraphe, pour l’effet.</p>
+      </section>
     </aside>
   </main>
 
@@ -220,6 +229,7 @@ Le chantier démarre en mars. La fromagerie vend 40 % de sa production sur place
     rendreTexte();
     rendreBilan();
     rendreRythme();
+    rendreAncrage();
     $("note-exemple").hidden = etat.texte !== EXEMPLE;
   }
 
@@ -304,6 +314,17 @@ Le chantier démarre en mars. La fromagerie vend 40 % de sa production sur place
     }).join("");
     $("rythme-texte").textContent = r.phrases + " phrases, " + nombre.format(r.moyenne) +
       " mots en moyenne, écart-type " + nombre.format(r.ecartType) + ".";
+  }
+
+  function rendreAncrage() {
+    var a = API.ancrage(etat.texte), p = API.paragraphes(etat.texte);
+    $("ancrage-faits").textContent = a
+      ? nombre.format(a.chiffresPour1000) + " chiffres et " + nombre.format(a.nomsPour1000) + " noms propres pour 1000 mots."
+      : "Mesurable à partir de cent mots.";
+    $("ancrage-paragraphes").textContent = p
+      ? p.nombre + " paragraphes, " + nombre.format(p.moyenne) + " mots en moyenne, écart-type " +
+        nombre.format(p.ecartType) + ", " + p.chutes + (p.chutes > 1 ? " chutes." : " chute.")
+      : "Paragraphes mesurables à partir de trois.";
   }
 
   function appliquerChoix(defiler) {

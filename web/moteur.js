@@ -15,6 +15,10 @@
   var DIRECTIVE = /<!--[ \t]*linter-ia[ \t]+(off|on)((?:[ \t]+[a-z0-9_]+)*)[ \t]*-->/gi;
   // Un motif a seuil ("densite_max", pour 1000 mots) ne sort qu'a partir de deux occurrences
   var MIN_OCCURRENCES_DENSITE = 2;
+  // Ancrage : memes classes que linter_ia.py
+  var CHIFFRE = /[0-9]+(?:[.,\u00a0\u202f][0-9]+| [0-9]{3}(?![0-9]))*/g;
+  var NOM_PROPRE = new RegExp("(?:(?<=[" + L + "0-9,;)][ \u00a0])|(?<=[" + L + "]'))[A-ZÀ-ÖØ-ÞŒ][" + L + "0-9-]*", "g");
+  var MOTS_MIN_ANCRAGE = 100, PARAGRAPHES_MIN = 3, CHUTE_APRES = 40, CHUTE_MOTS = 8;
   var PHRASES_MIN_RYTHME = 5;
 
   function compiler(motifs) {
@@ -96,7 +100,33 @@
     return { phrases: lg.length, longueurs: lg, moyenne: moy, ecartType: Math.sqrt(variance) };
   }
 
-  exporter({ compiler: compiler, occurrences: occurrences, rythme: rythme, compterMots: compterMots });
+  function ancrage(texte) {
+    var mots = compterMots(texte);
+    if (mots < MOTS_MIN_ANCRAGE) return null;
+    var chiffres = (texte.match(CHIFFRE) || []).length;
+    var noms = (texte.replace(/’/g, "'").match(NOM_PROPRE) || []).length;
+    return { mots: mots, chiffres: chiffres, nomsPropres: noms,
+             chiffresPour1000: chiffres * 1000 / mots, nomsPour1000: noms * 1000 / mots };
+  }
+
+  function paragraphes(texte) {
+    var blocs = texte.split(/\n[ \t]*\n/).filter(function (b) {
+      return compterMots(b) && !/^[ \t\n\r]*(?:#|[-*•][ \t])/.test(b);
+    });
+    if (blocs.length < PARAGRAPHES_MIN) return null;
+    var lg = blocs.map(compterMots);
+    var moy = lg.reduce(function (a, b) { return a + b; }, 0) / lg.length;
+    var variance = lg.reduce(function (a, b) { return a + (b - moy) * (b - moy); }, 0) / lg.length;
+    var chutes = 0;
+    for (var i = 1; i < blocs.length; i++) {
+      var phrases = blocs[i].trim().split(/(?<=[.!?])\s+/).filter(Boolean);
+      if (lg[i - 1] >= CHUTE_APRES && lg[i] < CHUTE_MOTS && phrases.length === 1) chutes++;
+    }
+    return { nombre: lg.length, moyenne: moy, ecartType: Math.sqrt(variance), chutes: chutes };
+  }
+
+  exporter({ compiler: compiler, occurrences: occurrences, rythme: rythme, compterMots: compterMots,
+            ancrage: ancrage, paragraphes: paragraphes });
 })(typeof module !== "undefined"
   ? function (api) { module.exports = api; }
   : function (api) { window.LinterIA = api; });

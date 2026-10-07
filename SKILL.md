@@ -18,7 +18,7 @@ sans rien installer, et ne modifie jamais le texte qu'il lit.
    - PDF : demander la version Word ou le texte, le script ne lit pas les PDF.
 2. Donner le bilan en quelques lignes : la densité pour 1000 mots et la
    répartition par niveau (ligne « densite »), les trois motifs les plus
-   fréquents, le rythme des phrases. Pas le tableau complet. Si la ligne
+   fréquents, le rythme des phrases et l'ancrage. Pas le tableau complet. Si la ligne
    « config » apparaît, dire quel fichier de configuration a été lu.
 3. Signaler d'abord les résidus de génération (phrases du chatbot, renvois
    `oaicite`, caractères invisibles). Les traces techniques se suppriment ; une
@@ -40,7 +40,9 @@ sans rien installer, et ne modifie jamais le texte qu'il lit.
 - Retoucher, ne pas réécrire. Une réécriture complète par un modèle de langage
   remet la cadence qu'on cherche à enlever.
 - Garder les faits, les chiffres et les noms propres : ce sont eux qui donnent du
-  corps au texte.
+  corps au texte. Si l'ancrage est faible (peu de chiffres, aucun nom propre),
+  demander à l'auteur une date, un montant ou un nom plutôt que de polir des
+  phrases qui resteront générales.
 - Les phrases qui annoncent ou qui concluent (« Les chiffres donnent la mesure du
   lieu », « devient un outil de… ») se suppriment souvent sans rien perdre.
 - Varier la longueur des phrases. Une phrase courte, seule, a sa place.

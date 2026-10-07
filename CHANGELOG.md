@@ -12,6 +12,8 @@ Nouvelles options : `--json`, `--seuil N` (code de retour 1 au-delà de N erreur
 
 Deux motifs à seuil, qui ne sortent qu'au-delà de trois occurrences pour 1000 mots et à partir de deux : les connecteurs en tête de phrase et « également, notamment ». Les seuils sont provisoires.
 
+Indicateur d'ancrage, hors du total comme le rythme : chiffres et noms propres pour 1000 mots, nombre et longueur des paragraphes, chutes d'une phrase courte après un long paragraphe. Affiché par le script, dans `--json` et dans la page.
+
 Correction : « de X à Y » ne prend plus le verbe « a » pour la préposition « à » (« le chef de projet a validé » sortait).
 
 ## 0.2.0 (2026-10-07)
