@@ -6,7 +6,7 @@ Le projet suit le [versionnage sémantique](https://semver.org/lang/fr/). Tant q
 
 Seize motifs de plus, quarante-six en tout. Une quatrième famille, les résidus de génération, regroupe les phrases du chatbot restées dans le texte (« Bien sûr ! », « J'espère que cela vous aide ») et les traces techniques (renvois `oaicite`, paramètres `utm_source=chatgpt.com`, caractères invisibles). Les nouvelles tournures couvrent les formules d'insistance (« il est important de noter que »), le décor d'époque (« dans un monde en constante évolution »), les conclusions récapitulatives, le participe présent en apposition, l'inflation de portée (« joue un rôle clé », « pierre angulaire »), « non seulement X, mais aussi Y », le diptyque « défis » puis « avenir prometteur » et les attributions vagues. Côté mots : adjectifs d'insistance et de brochure, calques de l'anglais, « plongeons dans ». Côté typographie : émojis et pictogrammes, filets horizontaux.
 
-Corrections : « utilité » accentué est compté et « utiliser » ne l'est plus ; « de X à Y » ignore les fourchettes chiffrées, ne part de « des » que vers « aux » (#1) et reconnaît « de l'… à la… » ; l'impératif « Créez » accentué est compté.
+Corrections : « utilité » accentué est compté et « utiliser » ne l'est plus ; « de X à Y » ignore les fourchettes chiffrées, ne part de « des » que vers « aux » (#1) et reconnaît « de l'… à la… » ; l'impératif « Créez » accentué est compté. Un fichier qui s'ouvre sur un filet `---` n'est plus pris pour un en-tête YAML, et l'en-tête retiré laisse des lignes vides pour garder les numéros de ligne. Les caractères × et ÷ ne comptent plus comme des lettres, ni pour le script ni pour la page.
 
 ## 0.1.0 (2026-10-01)
 

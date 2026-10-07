@@ -3,15 +3,15 @@
     "id": "residus_conversation",
     "nom": "Résidus de conversation",
     "famille": "residu",
-    "regex": "\\bj'espère que (?:cela|ceci|ça) (?:vous |t')?(?:aide|aidera|a aidé)|\\b(?:bien sûr|absolument|excellente question|bonne question|avec plaisir)\\s?!|\\bvoici (?:un|une) (?:aperçu|synthèse|résumé|proposition|version (?:révisée|améliorée|corrigée))\\b|\\bsi vous avez d'autres questions\\b|\\bsouhaitez-vous que\\b|\\bvoulez-vous que je\\b|\\bdans cet article,? (?:nous allons|je vais|vous découvrirez|nous verrons)\\b|\\bje suis désolé,? mais je ne peux pas\\b|\\ben tant qu'(?:IA|intelligence artificielle|assistant|modèle de langage)\\b",
+    "regex": "\\bj'espère que (?:cela|ceci|ça) (?:vous |t')?(?:aide|aidera|a aidé)|\\b(?:bien sûr|absolument|excellente question|bonne question|avec plaisir)\\s?!|\\bvoici (?:une|la) version (?:révisée|améliorée|corrigée|reformulée)\\b|\\bsi vous avez d'autres questions\\b|\\bje suis désolé,? mais je ne peux pas\\b|\\ben tant qu'(?:IA|intelligence artificielle|modèle de langage)\\b",
     "flags": "i",
-    "conseil": "Phrase adressée par le chatbot à son utilisateur et restée dans le texte : la supprimer."
+    "conseil": "Phrase qu'un chatbot adresse à son utilisateur : la supprimer si elle est restée dans le texte, la garder dans un vrai courrier."
   },
   {
     "id": "residus_techniques",
     "nom": "Résidus techniques",
     "famille": "residu",
-    "regex": ":?contentReference\\[oaicite:\\d+\\](?:\\{index=\\d+\\})?|\\[oaicite:\\d+\\]|\\[cite(?:_start|_end|:\\s?\\d+(?:,\\s?\\d+)*)\\]|\\bturn\\d+(?:search|news|view|file|image)\\d+\\b|utm_source=(?:chatgpt\\.com|openai|copilot\\.com|perplexity(?:\\.ai)?)|[\\u200B\\u200C\\u200D\\u2060]",
+    "regex": ":?contentReference\\[oaicite:\\d+\\](?:\\{index=\\d+\\})?|\\[oaicite:\\d+\\]|\\[cite(?:_start|_end|:\\s?\\d+(?:,\\s?\\d+)*)\\]|\\bturn\\d+(?:search|news|view|file|image)\\d+\\b|utm_source=(?:chatgpt\\.com|openai|copilot\\.com|perplexity(?:\\.ai)?)|[​⁠﻿]",
     "conseil": "Trace laissée par l'outil de génération (renvoi de citation, lien suivi, caractère invisible) : la supprimer avant envoi."
   },
   {
@@ -56,7 +56,7 @@
     "id": "pictogrammes",
     "nom": "Émojis et pictogrammes",
     "famille": "typo",
-    "regex": "[←-⇿☀-➿⬅-⬇⭐]|[🌀-🫿]",
+    "regex": "(?:[✅✔✨❌⚠⭐➡]|[🌀-🏺🐀-🫿])(?:[\\uFE0F🏻-🏿]|\\u200D[♀♂❤✈⚕⚖🌀-🏺🐀-🫿]\\uFE0F?)*|[🇦-🇿]{2}",
     "flags": "u",
     "conseil": "Pictogramme hérité du chat : le retirer, sauf sur un support qui en a l'usage comme un réseau social."
   },
@@ -64,9 +64,8 @@
     "id": "filets",
     "nom": "Filets horizontaux",
     "famille": "typo",
-    "regex": "^[ \\t]*(?:-{3,}|\\*{3,}|_{3,})[ \\t]*$",
-    "flags": "m",
-    "conseil": "Séparateur markdown collé tel quel : le supprimer, ou marquer la coupure par un intertitre."
+    "regex": "(?:(?<![\\s\\S])|(?<=\\n\\n)|(?<=\\n\\r\\n))[ \\t]*(?:-{3,}|\\*{3,}|_{3,})[ \\t]*(?=\\r?\\n|(?![\\s\\S]))",
+    "conseil": "Séparateur markdown collé tel quel entre deux paragraphes : le supprimer, ou marquer la coupure par un intertitre."
   },
   {
     "id": "deux_points_explicatifs",
@@ -180,7 +179,7 @@
     "id": "decor_epoque",
     "nom": "« dans un monde où », « à l'ère de »",
     "famille": "structure",
-    "regex": "\\bdans (?:un|le|notre) monde (?:où|actuel|en (?:constante|perpétuelle|pleine)|qui (?:évolue|change|bouge)|de plus en plus|trépidant|hyperconnecté)|\\bà l'ère (?:de|du|des|numérique)\\b|\\ben (?:constante|perpétuelle|permanente) (?:évolution|mutation)\\b|\\bà un rythme effréné\\b|\\bdans le paysage (?:actuel|numérique|contemporain|concurrentiel|économique|médiatique)\\b",
+    "regex": "\\bdans (?:un|le|notre) monde (?:où|actuel|en (?:constante|perpétuelle|pleine)|qui (?:évolue|change|bouge)|de plus en plus|trépidant|hyperconnecté)|\\bà l'ère (?:du numérique|numérique|digitale|du digital|de l'IA|de l'intelligence artificielle|des réseaux sociaux|des données|de la data)\\b|\\ben (?:constante|perpétuelle|permanente) (?:évolution|mutation)\\b|\\bà un rythme effréné\\b|\\bdans le paysage (?:actuel|numérique|contemporain|concurrentiel|économique|médiatique)\\b",
     "flags": "i",
     "conseil": "Toile de fond générique : la retirer, ou la remplacer par la date et le fait qui situent le texte."
   },
@@ -228,9 +227,9 @@
     "id": "attribution_vague",
     "nom": "Attributions vagues",
     "famille": "structure",
-    "regex": "\\b(?:les|des|de nombreux|certains|plusieurs|beaucoup d') ?(?:experts|observateurs|spécialistes|analystes) (?:s'accordent|estiment|soulignent|s'entendent|considèrent)\\b|\\bil est (?:communément|généralement|largement) (?:admis|reconnu|accepté)\\b",
+    "regex": "\\b(?:(?:les|des|de nombreux|certains|plusieurs) |beaucoup d')(?:experts|observateurs|spécialistes|analystes) (?:s'accordent|estiment|soulignent|s'entendent|considèrent)\\b|\\bil est (?:communément|généralement|largement) (?:admis|reconnu|accepté)\\b",
     "flags": "i",
-    "conseil": "Appui sans source : citer la personne ou le document, ou retirer l'appui."
+    "conseil": "Appui collectif sans nom : citer la personne ou le document, sauf si la source suit déjà dans la phrase."
   },
   {
     "id": "selon",
@@ -308,7 +307,7 @@
     "id": "de_x_a_y",
     "nom": "« de X à Y »",
     "famille": "structure",
-    "regex": "\\bde\\s+(?!\\d)\\w+\\s+[aà]\\s+\\w+|\\b(?:du\\s|de la\\s|de l')(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\s(?:[aà]\\s(?:la\\s|l')|aux?\\s)|\\bdes\\s(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\saux\\s",
+    "regex": "\\bde\\s+(?!\\d)(?!\\w+(?:er|ir|re|oir)\\b)\\w+\\s+[aà]\\s+\\w+|\\b(?:du\\s|de la\\s|de l')(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\s(?:[aà]\\s(?:la\\s|l')|aux?\\s)|\\bdes\\s(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\saux\\s",
     "flags": "i",
     "conseil": "« du premier clic à la commande » : nommer les étapes ou supprimer."
   },
@@ -332,7 +331,7 @@
     "id": "promotionnel",
     "nom": "Adjectifs de brochure",
     "famille": "mot",
-    "regex": "\\b(?:holistiques?|disruptif|disruptive|disruptifs|disruptives|révolutionnaires?|captivant(?:e|s|es)?|fascinant(?:e|s|es)?|vibrant(?:e|s|es)?|époustouflant(?:e|s|es)?|niché(?:e|s|es)?)\\b|\\bà couper le souffle\\b",
+    "regex": "\\b(?:holistiques?|disruptif|disruptive|disruptifs|disruptives|captivant(?:e|s|es)?|fascinant(?:e|s|es)?|vibrant(?:e|s|es)?|époustouflant(?:e|s|es)?)\\b|\\bà couper le souffle\\b",
     "flags": "i",
     "conseil": "Vocabulaire de brochure : décrire ce que l'on voit, ou ce qui a changé."
   },
