@@ -3,6 +3,7 @@
     "id": "residus_conversation",
     "nom": "Résidus de conversation",
     "famille": "residu",
+    "niveau": "erreur",
     "regex": "\\bj'espère que (?:cela|ceci|ça) (?:vous |t')?(?:aide|aidera|a aidé)|\\b(?:bien sûr|absolument|excellente question|bonne question|avec plaisir)\\s?!|\\bvoici (?:une|la) version (?:révisée|améliorée|corrigée|reformulée)\\b|\\bsi vous avez d'autres questions\\b|\\bje suis désolé,? mais je ne peux pas\\b|\\ben tant qu'(?:IA|intelligence artificielle|modèle de langage)\\b",
     "flags": "i",
     "conseil": "Phrase qu'un chatbot adresse à son utilisateur : la supprimer si elle est restée dans le texte, la garder dans un vrai courrier."
@@ -11,6 +12,7 @@
     "id": "residus_techniques",
     "nom": "Résidus techniques",
     "famille": "residu",
+    "niveau": "erreur",
     "regex": ":?contentReference\\[oaicite:\\d+\\](?:\\{index=\\d+\\})?|\\[oaicite:\\d+\\]|\\[cite(?:_start|_end|:\\s?\\d+(?:,\\s?\\d+)*)\\]|\\bturn\\d+(?:search|news|view|file|image)\\d+\\b|utm_source=(?:chatgpt\\.com|openai|copilot\\.com|perplexity(?:\\.ai)?)|[​⁠﻿]",
     "conseil": "Trace laissée par l'outil de génération (renvoi de citation, lien suivi, caractère invisible) : la supprimer avant envoi."
   },
@@ -18,6 +20,7 @@
     "id": "tirets_longs",
     "nom": "Tirets longs",
     "famille": "typo",
+    "niveau": "avertissement",
     "regex": "[—–]",
     "conseil": "Remplacer par une virgule, un deux-points ou des parenthèses."
   },
@@ -25,6 +28,7 @@
     "id": "guillemets_typographiques",
     "nom": "Guillemets typographiques",
     "famille": "typo",
+    "niveau": "info",
     "regex": "[«»“”‘]|(?<![A-Za-zÀ-ÿœŒ])’|’(?![A-Za-zÀ-ÿœŒ])",
     "brut": true,
     "conseil": "Vérifier qu'ils sont cohérents dans tout le document et voulus à cet endroit."
@@ -33,6 +37,7 @@
     "id": "gras_markdown",
     "nom": "Gras markdown",
     "famille": "typo",
+    "niveau": "info",
     "regex": "\\*\\*[^*\\n]+\\*\\*",
     "conseil": "Retirer le gras hérité du markdown."
   },
@@ -40,6 +45,7 @@
     "id": "puces",
     "nom": "Puces",
     "famille": "typo",
+    "niveau": "info",
     "regex": "^\\s*[-*•]\\s+\\S",
     "flags": "m",
     "conseil": "Revenir à la phrase quand la liste n'apporte rien au lecteur."
@@ -48,6 +54,7 @@
     "id": "titres",
     "nom": "Intertitres",
     "famille": "typo",
+    "niveau": "info",
     "regex": "^#{2,3}\\s",
     "flags": "m",
     "conseil": "Garder peu d'intertitres."
@@ -56,6 +63,7 @@
     "id": "pictogrammes",
     "nom": "Émojis et pictogrammes",
     "famille": "typo",
+    "niveau": "avertissement",
     "regex": "(?:[✅✔✨❌⚠⭐➡]|[🌀-🏺🐀-🫿])(?:[\\uFE0F🏻-🏿]|\\u200D[♀♂❤✈⚕⚖🌀-🏺🐀-🫿]\\uFE0F?)*|[🇦-🇿]{2}",
     "flags": "u",
     "conseil": "Pictogramme hérité du chat : le retirer, sauf sur un support qui en a l'usage comme un réseau social."
@@ -64,6 +72,7 @@
     "id": "filets",
     "nom": "Filets horizontaux",
     "famille": "typo",
+    "niveau": "info",
     "regex": "(?:(?<![\\s\\S])|(?<=\\n\\n)|(?<=\\n\\r\\n))[ \\t]*(?:-{3,}|\\*{3,}|_{3,})[ \\t]*(?=\\r?\\n|(?![\\s\\S]))",
     "conseil": "Séparateur markdown collé tel quel entre deux paragraphes : le supprimer, ou marquer la coupure par un intertitre."
   },
@@ -71,6 +80,7 @@
     "id": "deux_points_explicatifs",
     "nom": "Deux-points explicatifs",
     "famille": "structure",
+    "niveau": "info",
     "regex": "(?<=[A-Za-zÀ-ÿœŒ]) : (?=[A-Za-zÀ-ÿœŒ0-9\\\"«])",
     "conseil": "Remplacer « mot : explication » par une phrase complète."
   },
@@ -78,6 +88,7 @@
     "id": "tricolons",
     "nom": "Séries « X, Y et Z »",
     "famille": "structure",
+    "niveau": "info",
     "regex": ",\\s+[^,.;:!?\\n]{2,40}\\s+(?:et|ou)\\s+",
     "conseil": "Trop de séries à trois temps font un rythme mécanique : en garder une sur deux."
   },
@@ -85,6 +96,7 @@
     "id": "series_longues",
     "nom": "Énumérations de 4 termes et plus",
     "famille": "structure",
+    "niveau": "info",
     "regex": "(?:[^,.;:!?\\n]{2,40},\\s+){3,}[^,.;:!?\\n]{2,40}",
     "conseil": "Couper l'énumération, ou en faire une vraie liste si c'en est une."
   },
@@ -92,6 +104,7 @@
     "id": "anaphores",
     "nom": "Anaphores « par X, par Y, par Z »",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\b(par|pour|avec|sans|dans|sur|en|entre|chez|ce|qui|que)\\s[^,.;:!?\\n]{2,60},\\s+\\1\\s[^,.;:!?\\n]{2,60},\\s+\\1\\b",
     "flags": "i",
     "conseil": "Effet oratoire typique : garder un seul terme ou réécrire la phrase."
@@ -100,6 +113,7 @@
     "id": "puis_puis",
     "nom": "« puis…, puis… »",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\bpuis\\b[^.!?\\n]{1,60}\\bpuis\\b",
     "flags": "i",
     "conseil": "Une étape par phrase, ou une phrase plus courte."
@@ -108,6 +122,7 @@
     "id": "pas_x_mais_y",
     "nom": "« pas X, mais Y »",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\b(?:non pas|pas)\\b[^.,;:!?\\n]{2,60},?\\s+mais\\b",
     "flags": "i",
     "conseil": "Tournure que les lecteurs repèrent vite. Dire directement ce qui est."
@@ -116,6 +131,7 @@
     "id": "ce_n_est_pas",
     "nom": "« ce n'est pas…, c'est… »",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\b(?:ne\\s+|n')(?:s'|se\\s)?\\w+\\s+pas\\b[^.\\n]{0,60},?\\s+(?:c'est|mais|il s'agit)",
     "flags": "i",
     "conseil": "Définition par la négation : affirmer directement."
@@ -124,6 +140,7 @@
     "id": "comme_les_autres",
     "nom": "« n'est pas un X comme les autres »",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\b(?:n'|ne\\s)(?:est|sont)\\spas\\s(?:un|une|des)\\s[^.,;\\n]{2,40}\\scomme\\s(?:les|des)\\sautres",
     "flags": "i",
     "conseil": "Ouverture toute faite : commencer par un fait."
@@ -132,6 +149,7 @@
     "id": "chute_pour_que",
     "nom": "Chute en « , pour que… »",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": ",\\spour\\squ(?:e\\s|')[^.!?\\n]{3,100}[.!?]",
     "flags": "i",
     "conseil": "Fin de phrase qui justifie ou embellit : la couper, ou en faire une phrase à part."
@@ -140,6 +158,7 @@
     "id": "devient_un_outil",
     "nom": "« devient un outil de… »",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\bdevien(?:t|nent|dra|dront)\\s(?:un|une|le|la|l')\\s?(?:vrai(?:e)?\\s)?(?:outil|levier|atout|moteur|pilier|alli[ée])",
     "flags": "i",
     "conseil": "Formule de conclusion : dire ce que fait l'objet, chiffre à l'appui si possible."
@@ -148,6 +167,7 @@
     "id": "questions",
     "nom": "Questions",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\?",
     "conseil": "Question rhétorique : la remplacer par l'affirmation."
   },
@@ -155,6 +175,7 @@
     "id": "appel_direct",
     "nom": "Adresse au lecteur (vous, votre)",
     "famille": "structure",
+    "niveau": "info",
     "regex": "\\b(?:vous|votre|vos)\\b",
     "flags": "i",
     "conseil": "Hors courrier, passer à l'impersonnel ou au « nous »."
@@ -163,6 +184,7 @@
     "id": "imperatifs",
     "nom": "Impératifs incitatifs",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "^\\s*(?:ajoutez|cr[eé]ez|listez|testez|reformulez|auditez|remplacez|commencez|pensez|imaginez)\\b",
     "flags": "mi",
     "conseil": "Impératif en tête de ligne : reformuler en constat."
@@ -171,6 +193,7 @@
     "id": "insistance",
     "nom": "« il est important de noter que »",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\bil (?:est|semble) (?:important|essentiel|crucial|primordial|capital|intéressant) de (?:noter|souligner|rappeler|préciser|comprendre|mentionner)\\b|\\bil (?:convient|importe|y a lieu) de (?:noter|souligner|rappeler|préciser|mentionner)\\b|\\bil est à noter\\b",
     "flags": "i",
     "conseil": "Annonce qui retarde l'information : retirer la formule et commencer par le fait."
@@ -179,6 +202,7 @@
     "id": "decor_epoque",
     "nom": "« dans un monde où », « à l'ère de »",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\bdans (?:un|le|notre) monde (?:où|actuel|en (?:constante|perpétuelle|pleine)|qui (?:évolue|change|bouge)|de plus en plus|trépidant|hyperconnecté)|\\bà l'ère (?:du numérique|numérique|digitale|du digital|de l'IA|de l'intelligence artificielle|des réseaux sociaux|des données|de la data)\\b|\\ben (?:constante|perpétuelle|permanente) (?:évolution|mutation)\\b|\\bà un rythme effréné\\b|\\bdans le paysage (?:actuel|numérique|contemporain|concurrentiel|économique|médiatique)\\b",
     "flags": "i",
     "conseil": "Toile de fond générique : la retirer, ou la remplacer par la date et le fait qui situent le texte."
@@ -187,6 +211,7 @@
     "id": "cloture_recap",
     "nom": "Conclusions récapitulatives",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "(?:^|(?<=[.!?]\\s))(?:en (?:conclusion|résumé|somme|définitive|fin de compte|bref)|au final|pour (?:résumer|conclure)|comme nous l'avons vu)\\b",
     "flags": "im",
     "conseil": "Le paragraphe qui redit ce qui précède : finir plutôt sur un fait, une décision ou la suite."
@@ -195,6 +220,7 @@
     "id": "participe_apposition",
     "nom": "Participe présent en apposition",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": ",\\s(?:soulignant|mettant (?:ainsi )?en (?:lumière|avant|évidence|valeur)|reflétant|symbolisant|témoignant|illustrant|contribuant (?:ainsi )?à|favorisant|renforçant|consolidant|ouvrant (?:ainsi )?la voie)\\b",
     "flags": "i",
     "conseil": "Commentaire accroché en fin de phrase : le couper, ou en faire une phrase qui dit qui constate quoi."
@@ -203,6 +229,7 @@
     "id": "inflation_portee",
     "nom": "Inflation de portée",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\btémoign(?:e|ent|ait|aient|ant) d(?:e\\s|'|u\\s|es\\s)|\\bjou(?:e|ent|ait|aient|ant|era|eront) un rôle (?:clé|crucial|essentiel|majeur|central|déterminant|primordial|moteur)|\\bmarqu(?:e|ent|ait|aient|ant|era) (?:un tournant|une étape (?:clé|décisive|majeure)|un jalon)|\\bune empreinte indélébile\\b|\\bun tournant décisif\\b|\\bpierre angulaire\\b",
     "flags": "i",
     "conseil": "Fait ordinaire gonflé en événement : garder le fait, retirer la portée qu'on lui prête."
@@ -211,6 +238,7 @@
     "id": "non_seulement",
     "nom": "« non seulement X, mais aussi Y »",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\bnon seulement\\b[^.!?\\n]{2,100}?\\bmais (?:aussi|également|encore|surtout)\\b",
     "flags": "i",
     "conseil": "Construction en balancier : dire les deux choses en deux phrases simples, ou n'en garder qu'une."
@@ -219,6 +247,7 @@
     "id": "defis_perspectives",
     "nom": "« fait face à des défis »",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\bfai(?:t|re|sait|saient|sant) face à (?:de nombreux|plusieurs|des|certains|quelques) défis\\b|\\b(?:en dépit de|malgré) ces défis\\b|\\bl'avenir s'annonce (?:prometteur|radieux|brillant)\\b|\\bdéfis et (?:perspectives|opportunités)\\b",
     "flags": "i",
     "conseil": "Diptyque obstacle puis optimisme : nommer le problème précis et ce qui a été fait, avec une date."
@@ -227,14 +256,26 @@
     "id": "attribution_vague",
     "nom": "Attributions vagues",
     "famille": "structure",
+    "niveau": "avertissement",
     "regex": "\\b(?:(?:les|des|de nombreux|certains|plusieurs) |beaucoup d')(?:experts|observateurs|spécialistes|analystes) (?:s'accordent|estiment|soulignent|s'entendent|considèrent)\\b|\\bil est (?:communément|généralement|largement) (?:admis|reconnu|accepté)\\b",
     "flags": "i",
     "conseil": "Appui collectif sans nom : citer la personne ou le document, sauf si la source suit déjà dans la phrase."
   },
   {
+    "id": "connecteurs",
+    "nom": "Connecteurs en tête de phrase",
+    "famille": "structure",
+    "niveau": "info",
+    "regex": "(?:^|(?<=[.!?]\\s))(?:en outre|par ailleurs|de plus|qui plus est|dès lors|par conséquent|dans ce cadre|dans ce contexte|dans cette optique|à cet égard)\\b",
+    "flags": "im",
+    "densite_max": 3,
+    "conseil": "Un connecteur par endroit passe, leur répétition fait l'échafaudage d'un texte généré : juxtaposer les phrases, ou dire le lien précis."
+  },
+  {
     "id": "selon",
     "nom": "« selon »",
     "famille": "mot",
+    "niveau": "info",
     "regex": "\\bselon\\b",
     "flags": "i",
     "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
@@ -243,6 +284,7 @@
     "id": "il_faut",
     "nom": "« il faut »",
     "famille": "mot",
+    "niveau": "info",
     "regex": "\\bil faut\\b",
     "flags": "i",
     "conseil": "Dire qui fait quoi, ou supprimer."
@@ -251,6 +293,7 @@
     "id": "vrai",
     "nom": "« vrai, vraiment »",
     "famille": "mot",
+    "niveau": "info",
     "regex": "\\bvrai(?:e|es|s|ment)?\\b",
     "flags": "i",
     "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
@@ -259,6 +302,7 @@
     "id": "signal",
     "nom": "« signal, signaux »",
     "famille": "mot",
+    "niveau": "info",
     "regex": "\\bsign(?:al|aux)\\b",
     "flags": "i",
     "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
@@ -267,6 +311,7 @@
     "id": "promesse",
     "nom": "« promesse »",
     "famille": "mot",
+    "niveau": "info",
     "regex": "\\bpromesse\\w*",
     "flags": "i",
     "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
@@ -275,6 +320,7 @@
     "id": "surtout",
     "nom": "« surtout »",
     "famille": "mot",
+    "niveau": "info",
     "regex": "\\bsurtout\\b",
     "flags": "i",
     "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
@@ -283,6 +329,7 @@
     "id": "concret",
     "nom": "« concret, concrètement »",
     "famille": "mot",
+    "niveau": "info",
     "regex": "\\bconcr[eè]t\\w*",
     "flags": "i",
     "conseil": "Donner l'exemple au lieu de l'annoncer."
@@ -291,6 +338,7 @@
     "id": "utile",
     "nom": "« utile, utilité »",
     "famille": "mot",
+    "niveau": "info",
     "regex": "\\butil(?:es?|it[eé]s?)\\b",
     "flags": "i",
     "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
@@ -299,6 +347,7 @@
     "id": "enjeu",
     "nom": "« enjeu »",
     "famille": "mot",
+    "niveau": "info",
     "regex": "\\benjeu\\w*",
     "flags": "i",
     "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
@@ -307,7 +356,8 @@
     "id": "de_x_a_y",
     "nom": "« de X à Y »",
     "famille": "structure",
-    "regex": "\\bde\\s+(?!\\d)(?!\\w+(?:er|ir|re|oir)\\b)\\w+\\s+[aà]\\s+\\w+|\\b(?:du\\s|de la\\s|de l')(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\s(?:[aà]\\s(?:la\\s|l')|aux?\\s)|\\bdes\\s(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\saux\\s",
+    "niveau": "avertissement",
+    "regex": "\\bde\\s+(?!\\d)(?!\\w+(?:er|ir|re|oir)\\b)\\w+\\s+à\\s+\\w+|\\b(?:du\\s|de la\\s|de l')(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\s(?:à\\s(?:la\\s|l')|aux?\\s)|\\bdes\\s(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\saux\\s",
     "flags": "i",
     "conseil": "« du premier clic à la commande » : nommer les étapes ou supprimer."
   },
@@ -315,6 +365,7 @@
     "id": "agent",
     "nom": "« agent, agentique »",
     "famille": "mot",
+    "niveau": "info",
     "regex": "\\bagent\\w*",
     "flags": "i",
     "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
@@ -323,6 +374,7 @@
     "id": "intensifs",
     "nom": "« crucial, primordial, incontournable »",
     "famille": "mot",
+    "niveau": "avertissement",
     "regex": "\\b(?:crucia(?:l|le|les|ux)|primordia(?:l|le|les|ux)|incontournables?)\\b",
     "flags": "i",
     "conseil": "Adjectif d'insistance très fréquent sous la plume des LLM : le retirer, ou dire en quoi la chose compte."
@@ -331,6 +383,7 @@
     "id": "promotionnel",
     "nom": "Adjectifs de brochure",
     "famille": "mot",
+    "niveau": "avertissement",
     "regex": "\\b(?:holistiques?|disruptif|disruptive|disruptifs|disruptives|captivant(?:e|s|es)?|fascinant(?:e|s|es)?|vibrant(?:e|s|es)?|époustouflant(?:e|s|es)?)\\b|\\bà couper le souffle\\b",
     "flags": "i",
     "conseil": "Vocabulaire de brochure : décrire ce que l'on voit, ou ce qui a changé."
@@ -339,6 +392,7 @@
     "id": "calques_anglais",
     "nom": "Calques de l'anglais",
     "famille": "mot",
+    "niveau": "avertissement",
     "regex": "\\bf(?:aire|ait|aisait|aisaient|aisant|ont) du sens\\b|\\badress(?:er|e|ent|ons|ez|ant|é|ée|és|ées) (?:un|une|le|la|les|ce|cette|ces|des) (?:problèmes?|sujets?|enjeux?|défis?)\\b|\\bune symphonie de\\b|\\bque (?:vous soyez|tu sois) (?:une? )?\\w+ ou\\b|\\bdéverrouill\\w* (?:le|tout le|votre) potentiel\\b",
     "flags": "i",
     "conseil": "Tournure traduite de l'anglais : « avoir du sens », « traiter un problème »."
@@ -347,14 +401,26 @@
     "id": "plonger",
     "nom": "« plongeons dans »",
     "famille": "mot",
+    "niveau": "avertissement",
     "regex": "\\bplong(?:er|eons|ez) (?:dans|au c(?:œ|oe)ur)\\b",
     "flags": "i",
     "conseil": "Image d'entrée en matière : entrer directement dans le sujet."
   },
   {
+    "id": "egalement_notamment",
+    "nom": "« également, notamment »",
+    "famille": "mot",
+    "niveau": "info",
+    "regex": "\\b(?:également|notamment)\\b",
+    "flags": "i",
+    "densite_max": 3,
+    "conseil": "Mots parmi les plus fréquents sous la plume des LLM en français : « aussi », « en particulier », ou rien."
+  },
+  {
     "id": "apostrophes_melangees",
     "nom": "Apostrophes mélangées",
     "famille": "typo",
+    "niveau": "avertissement",
     "special": "apostrophes",
     "conseil": "Droites et courbes dans le même texte : la frontière entre texte tapé et texte collé se voit. Remplacement global dans Word."
   }

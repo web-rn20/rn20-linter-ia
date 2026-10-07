@@ -33,12 +33,14 @@ ATTENDUS = {
         "enjeu": 1, "de_x_a_y": 1, "agent": 1, "apostrophes_melangees": 3,
     },
     "cas-corriges.md": {"imperatifs": 1, "utile": 2, "de_x_a_y": 1},
+    "exclusions-et-densite.md": {"selon": 2, "il_faut": 2, "connecteurs": 3, "egalement_notamment": 3},
     "exemple-ia.md": {
         "deux_points_explicatifs": 1, "anaphores": 1, "puis_puis": 1, "pas_x_mais_y": 1,
         "ce_n_est_pas": 1, "comme_les_autres": 1, "chute_pour_que": 1, "devient_un_outil": 1,
         "questions": 1, "appel_direct": 1, "il_faut": 1, "promesse": 1, "concret": 1,
         "de_x_a_y": 1, "apostrophes_melangees": 1,
     },
+    "paragraphes-et-ancrage.md": {"puces": 1, "titres": 1},
     "texte-sobre.md": {"tricolons": 1, "surtout": 1},
     "tics-generation.md": {
         "residus_conversation": 2, "residus_techniques": 5, "pictogrammes": 5, "filets": 1,
@@ -73,6 +75,7 @@ class Comptes(unittest.TestCase):
         for m in MOTIFS:
             self.assertIn(m["famille"], {"residu", "structure", "mot", "typo"}, m["id"])
             self.assertTrue(m["nom"] and m["conseil"], m["id"])
+            self.assertIn(m["niveau"], linter_ia.NIVEAUX, m["id"])
 
 class Lecture(unittest.TestCase):
     def test_front_matter_remplace_par_des_lignes_vides(self):
@@ -89,6 +92,105 @@ class Lecture(unittest.TestCase):
                 f.write("Texte.")
             self.assertEqual(linter_ia.lire(chemin), "Texte.")
 
+class Ancrage(unittest.TestCase):
+    def test_chiffres_noms_et_chute(self):
+        texte = linter_ia.lire(os.path.join(FIX, "paragraphes-et-ancrage.md"))
+        a, p = linter_ia.ancrage(texte), linter_ia.paragraphes(texte)
+        self.assertEqual((a.chiffres, a.noms_propres), (5, 6))
+        self.assertEqual((p.nombre, p.chutes), (3, 1))
+
+    def test_hors_prose_et_docx(self):
+        long = " ".join(["mot"] * 45) + "."
+        self.assertEqual(linter_ia.paragraphes(f"{long}\n\n---\n\n{long}\n\n{long}").chutes, 0)
+        self.assertEqual(linter_ia.paragraphes(f"## Titre\n{long}\n\n{long}\n\n{long}").nombre, 3)
+        self.assertEqual(linter_ia.paragraphes(f"#hashtag {long}\n\n{long}\n\n{long}").nombre, 3)
+
+    def test_listes_et_dates(self):
+        liste = "\n".join(f"{i}. un deux trois quatre cinq." for i in range(1, 30))
+        self.assertEqual(linter_ia.ancrage(liste).chiffres, 0)
+        texte = "Le 2026-10-07 puis le 07/10/2026. " + " ".join(["mot"] * 100)
+        self.assertEqual(linter_ia.ancrage(texte).chiffres, 2)
+
+    def test_texte_court_sans_mesure(self):
+        self.assertIsNone(linter_ia.ancrage("Le chai ouvre à Gaillac le 2 septembre."))
+        self.assertIsNone(linter_ia.paragraphes("Un.\n\nDeux."))
+
+
+class Exclusions(unittest.TestCase):
+    def test_off_cible_et_texte_du_commentaire(self):
+        texte = "<!-- linter-ia off selon -->Selon elle, il faut voir.<!-- linter-ia on selon --> Selon lui."
+        c = comptes(texte)
+        self.assertEqual((c.get("selon"), c.get("il_faut")), (1, 1))
+
+    def test_off_sans_on_court_jusqu_a_la_fin(self):
+        self.assertEqual(comptes("Il faut voir. <!-- linter-ia off --> Il faut partir, selon elle."),
+                         {"il_faut": 1})
+
+    def test_texte_exclu_hors_du_compte_de_mots(self):
+        texte = "Un deux trois.\n<!-- linter-ia off -->\nquatre cinq six sept.\n<!-- linter-ia on -->\nHuit."
+        self.assertEqual(linter_ia.compter_mots(linter_ia.masquer(texte)), 4)
+        self.assertEqual(len(linter_ia.masquer(texte)), len(texte))
+
+    def test_motif_inconnu_signale_avec_sa_ligne(self):
+        messages = linter_ia.ids_inconnus("Texte.\n<!-- linter-ia off selon_x -->", MOTIFS)
+        self.assertEqual(messages, ["l.2 : motif inconnu 'selon_x' dans un commentaire linter-ia"])
+
+    def test_seuil_de_densite_sous_deux_occurrences(self):
+        self.assertEqual(comptes("Le site est également refait."), {})
+
+
+class Configuration(unittest.TestCase):
+    def ecrire(self, dossier, nom, contenu):
+        chemin = os.path.join(dossier, nom)
+        with open(chemin, "w", encoding="utf-8") as f:
+            f.write(contenu)
+        return chemin
+
+    def test_config_cherchee_dans_les_dossiers_parents(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.ecrire(d, ".linter-ia.json", "{}")
+            os.mkdir(os.path.join(d, "sous"))
+            texte = self.ecrire(os.path.join(d, "sous"), "t.md", "x")
+            self.assertEqual(linter_ia.chercher_config(texte), os.path.join(d, ".linter-ia.json"))
+
+    def test_accepter_et_ignorer(self):
+        with tempfile.TemporaryDirectory() as d:
+            chemin = self.ecrire(d, "c.json", '{"accepter": ["agents de la DGAL"], "ignorer": ["selon"]}')
+            config = linter_ia.charger_config(chemin, MOTIFS)
+        texte = "Le rapport des agents de la DGAL à la préfecture, selon elle. Un agent passe."
+        resultat = linter_ia.occurrences(texte, MOTIFS, config)
+        c = {k: len(v) for k, v in resultat.items() if v}
+        self.assertEqual(c, {"agent": 1})
+
+    def test_expression_acceptee_avant_le_seuil_de_densite(self):
+        with tempfile.TemporaryDirectory() as d:
+            config = linter_ia.charger_config(self.ecrire(d, "c.json", '{"accepter": ["notamment"]}'), MOTIFS)
+        texte = "Le site est également refait, notamment l'accueil. Le menu aussi, notamment le pied."
+        self.assertEqual(len(linter_ia.occurrences(texte, MOTIFS)["egalement_notamment"]), 3)
+        self.assertEqual(linter_ia.occurrences(texte, MOTIFS, config)["egalement_notamment"], [])
+
+    def test_recherche_arretee_a_la_racine_git(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.ecrire(d, ".linter-ia.json", "{}")
+            depot = os.path.join(d, "depot")
+            os.makedirs(os.path.join(depot, ".git"))
+            texte = self.ecrire(depot, "t.md", "x")
+            self.assertIsNone(linter_ia.chercher_config(texte))
+
+    def test_erreurs_nomment_le_champ(self):
+        with tempfile.TemporaryDirectory() as d:
+            cas = {'{"accepte": []}': 'cle inconnue "accepte"',
+                   '{"ignorer": ["inconnu"]}': "motif inconnu, 'inconnu'",
+                   '{"accepter": "agents"}': '"accepter" doit etre une liste',
+                   "[1": "configuration illisible"}
+            for contenu, message in cas.items():
+                with self.subTest(contenu):
+                    chemin = self.ecrire(d, "c.json", contenu)
+                    with self.assertRaises(linter_ia.ErreurLecture) as e:
+                        linter_ia.charger_config(chemin, MOTIFS)
+                    self.assertIn(message, str(e.exception))
+
+
 class Docx(unittest.TestCase):
     def test_lecture_sans_dependance(self):
         xml = ('<w:document xmlns:w="w"><w:body>'
@@ -102,7 +204,7 @@ class Docx(unittest.TestCase):
             with zipfile.ZipFile(chemin, "w") as z:
                 z.writestr("word/document.xml", xml)
             texte = linter_ia.lire(chemin)
-        self.assertEqual(texte, "## Notre approche\n- une puce\nCe n'est pas un outil, c'est un levier.")
+        self.assertEqual(texte, "## Notre approche\n\n- une puce\n\nCe n'est pas un outil, c'est un levier.")
         c = comptes(texte)
         self.assertEqual((c.get("titres"), c.get("puces"), c.get("ce_n_est_pas")), (1, 1, 1))
 
@@ -143,6 +245,46 @@ class LigneDeCommande(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("fichier .docx illisible", erreur)
 
+    def test_json(self):
+        code, sortie, _ = self.lancer("--json", "--sans-config", os.path.join(FIX, "texte-sobre.md"))
+        self.assertEqual(code, 0)
+        donnees = json.loads(sortie)
+        self.assertEqual(donnees[0]["reperes"], 2)
+        self.assertEqual(donnees[0]["par_niveau"], {"erreur": 0, "avertissement": 0, "info": 2})
+        premiere = donnees[0]["occurrences"][0]
+        self.assertEqual((premiere["motif"], premiere["ligne"], premiere["texte"]), ("surtout", 1, "surtout"))
+
+    def test_seuil(self):
+        sobre = os.path.join(FIX, "texte-sobre.md")
+        residus = os.path.join(FIX, "tics-generation.md")
+        self.assertEqual(self.lancer("--seuil", "5", "--sans-config", sobre)[0], 0)
+        self.assertEqual(self.lancer("--seuil", "1000", "--sans-config", residus)[0], 1)
+        self.assertEqual(self.lancer("--sans-config", residus)[0], 0)
+
+    def test_seuil_sur_la_densite_exacte(self):
+        b = {"mots": 1000, "par_niveau": {"erreur": 0, "avertissement": 15, "info": 0},
+             "a_reprendre_pour_1000_mots": 15.0}
+        self.assertFalse(linter_ia.depasse([b], 15))
+        b2 = dict(b, mots=997)
+        self.assertTrue(linter_ia.depasse([b2], 15))
+
+    def test_entree_standard_sans_front_matter(self):
+        ancien = sys.stdin
+        sys.stdin = io.StringIO("\ufeff---\ntitre: x\n---\nTexte.")
+        try:
+            self.assertEqual(linter_ia.lire("-"), "\n\n\nTexte.")
+        finally:
+            sys.stdin = ancien
+
+    def test_config_invalide(self):
+        with tempfile.TemporaryDirectory() as d:
+            chemin = os.path.join(d, "c.json")
+            with open(chemin, "w", encoding="utf-8") as f:
+                f.write('{"ignorer": ["inconnu"]}')
+            code, _, erreur = self.lancer("--config", chemin, os.path.join(FIX, "texte-sobre.md"))
+        self.assertEqual(code, 2)
+        self.assertIn("inconnu", erreur)
+
     def test_extrait_sur_une_ligne(self):
         texte = "premiere ligne\nseconde ligne"
         self.assertEqual(linter_ia.extrait(texte, 9, 20, marge=5), "...iere [ligne\nsecon]de li...".replace("\n", " "))
@@ -159,8 +301,10 @@ const car = (t, i) => Array.from(t.slice(0, i)).length;
 const out = {};
 for (const [nom, t] of Object.entries(textes)) {
   const occ = api.occurrences(t, motifs);
-  const r = api.rythme(t);
+  const r = api.rythme(t), a = api.ancrage(t), p = api.paragraphes(t);
   out[nom] = {
+    ancrage: a && [a.chiffres, a.nomsPropres],
+    paragraphes: p && [p.nombre, p.moyenne, p.ecartType, p.chutes],
     occ: Object.fromEntries(Object.entries(occ).map(([k, v]) => [k, v.map(o => [car(t, o.debut), car(t, o.fin)])])),
     rythme: r && [r.phrases, r.moyenne, r.ecartType],
   };
@@ -179,6 +323,16 @@ console.log(JSON.stringify(out));
             for m in MOTIFS:
                 with self.subTest(fixture=nom, motif=m["id"]):
                     self.assertEqual([[o.start(), o.end()] for o in occ[m["id"]]], js[nom]["occ"][m["id"]])
+            a, p = linter_ia.ancrage(texte), linter_ia.paragraphes(texte)
+            with self.subTest(fixture=nom, ancrage=True):
+                self.assertEqual(a and [a.chiffres, a.noms_propres], js[nom]["ancrage"])
+            with self.subTest(fixture=nom, paragraphes=True):
+                if p is None:
+                    self.assertIsNone(js[nom]["paragraphes"])
+                else:
+                    self.assertEqual([p.nombre, p.chutes], [js[nom]["paragraphes"][0], js[nom]["paragraphes"][3]])
+                    self.assertAlmostEqual(p.moyenne, js[nom]["paragraphes"][1])
+                    self.assertAlmostEqual(p.ecart_type, js[nom]["paragraphes"][2])
             r = linter_ia.rythme(texte)
             with self.subTest(fixture=nom, rythme=True):
                 if r is None:

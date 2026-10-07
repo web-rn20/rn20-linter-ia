@@ -16,7 +16,7 @@ Merci de votre intérêt. Le projet est en cours de développement : une issue a
 
 ## Ajouter ou modifier un motif
 
-1. Modifier `patterns.json`. Chaque motif a un `id` unique, un `nom`, une `famille` (`residu`, `structure`, `mot` ou `typo`), une `regex`, des `flags` facultatifs (`i`, `m`, `u`) et un `conseil`. Le drapeau `u` sert aux émojis hors du plan de base : JavaScript en a besoin, Python l'ignore. La même regex est lue par Python et par JavaScript : pas de drapeau en ligne comme `(?i)`, passer par `flags`. Un motif qui doit voir les apostrophes courbes telles quelles porte `"brut": true`.
+1. Modifier `patterns.json`. Chaque motif a un `id` unique, un `nom`, une `famille` (`residu`, `structure`, `mot` ou `typo`), un `niveau` (`erreur`, `avertissement` ou `info`), une `regex`, des `flags` facultatifs (`i`, `m`, `u`) et un `conseil`. Le drapeau `u` sert aux émojis hors du plan de base : JavaScript en a besoin, Python l'ignore. Un motif qui ne doit sortir qu'en nombre porte `densite_max`, en occurrences pour 1000 mots ; il ne sort alors qu'à partir de deux occurrences et au-delà de ce seuil. La même regex est lue par Python et par JavaScript : pas de drapeau en ligne comme `(?i)`, passer par `flags`. Un motif qui doit voir les apostrophes courbes telles quelles porte `"brut": true`.
 2. Ajouter dans `tests/fixtures/` une phrase qui déclenche le motif, et une qui ne doit pas le déclencher si le risque de faux positif est réel. Mettre à jour les comptes attendus dans `tests/test_linter.py`.
 3. Régénérer la page : `python3 build_web.py`. Le fichier `web/linter-ia.html` ne se modifie jamais à la main.
 4. Lancer les tests : `python3 tests/test_linter.py`. Le test de parité entre le script et la page demande `node` ; sans lui, il est sauté en local, mais il tourne toujours dans la CI.
@@ -25,7 +25,7 @@ Merci de votre intérêt. Le projet est en cours de développement : une issue a
 
 Elles sont vérifiées à chaque revue.
 
-- **Le texte analysé ne sort jamais.** On colle dans ce linter des textes non publiés. La page ne fait aucun appel réseau, ne charge aucune ressource externe (ni CDN, ni police, ni statistiques) et ne stocke pas le texte collé. Le script ne lit que les fichiers qu'on lui donne.
+- **Le texte analysé ne sort jamais.** On colle dans ce linter des textes non publiés. La page ne fait aucun appel réseau, ne charge aucune ressource externe (ni CDN, ni police, ni statistiques) et ne stocke pas le texte collé. Le script ne lit que les fichiers qu'on lui donne, plus le `.linter-ia.json` du projet : il le cherche du dossier du texte vers le haut, sans dépasser la racine du dépôt git ni le dossier personnel, et dit lequel il a lu.
 - **Tout texte inséré dans la page est échappé.** Jamais de `innerHTML` sur une chaîne qui contient du texte utilisateur non échappé.
 - **Une seule source de motifs.** Un diff qui touche `patterns.json`, `web/page.html` ou `web/moteur.js` sans régénérer `web/linter-ia.html` est incomplet ; un test le vérifie.
 - **Deux moteurs, mêmes résultats.** `\b` et `\w` sont ASCII en JavaScript et Unicode en Python : `web/moteur.js` les réécrit. Tout motif passe le test de parité, qui compare les positions trouvées par les deux moteurs sur les mêmes textes.

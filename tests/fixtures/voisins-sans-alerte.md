@@ -16,3 +16,7 @@ Il a décidé de passer à autre chose. Elle a fini de mettre à jour le site.
 Titre souligné
 ---
 Texte sous le titre.
+La cave ouvre également le dimanche.
+Le chef de projet a validé le plan.
+Le fichier de configuration a été lu.
+Le chef de l'équipe a la main sur le stock.
