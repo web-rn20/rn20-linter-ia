@@ -40,6 +40,14 @@ ATTENDUS = {
         "de_x_a_y": 1, "apostrophes_melangees": 1,
     },
     "texte-sobre.md": {"tricolons": 1, "surtout": 1},
+    "tics-generation.md": {
+        "residus_conversation": 3, "residus_techniques": 1, "pictogrammes": 2, "filets": 1,
+        "appel_direct": 1, "insistance": 1, "decor_epoque": 1, "cloture_recap": 1,
+        "participe_apposition": 1, "inflation_portee": 3, "non_seulement": 1,
+        "defis_perspectives": 2, "attribution_vague": 1, "intensifs": 2, "promotionnel": 2,
+        "calques_anglais": 2, "plonger": 1,
+    },
+    "voisins-sans-alerte.md": {},
 }
 
 def comptes(texte):
@@ -63,7 +71,7 @@ class Comptes(unittest.TestCase):
         ids = [m["id"] for m in MOTIFS]
         self.assertEqual(len(ids), len(set(ids)))
         for m in MOTIFS:
-            self.assertIn(m["famille"], {"structure", "mot", "typo"}, m["id"])
+            self.assertIn(m["famille"], {"residu", "structure", "mot", "typo"}, m["id"])
             self.assertTrue(m["nom"] and m["conseil"], m["id"])
 
 class Docx(unittest.TestCase):
@@ -131,12 +139,14 @@ class Parite(unittest.TestCase):
 const api = require(process.argv[1]);
 const motifs = api.compiler(require(process.argv[2]));
 const textes = JSON.parse(require("fs").readFileSync(0, "utf8"));
+// positions JavaScript en unites UTF-16, ramenees en caracteres comme en Python
+const car = (t, i) => Array.from(t.slice(0, i)).length;
 const out = {};
 for (const [nom, t] of Object.entries(textes)) {
   const occ = api.occurrences(t, motifs);
   const r = api.rythme(t);
   out[nom] = {
-    occ: Object.fromEntries(Object.entries(occ).map(([k, v]) => [k, v.map(o => [o.debut, o.fin])])),
+    occ: Object.fromEntries(Object.entries(occ).map(([k, v]) => [k, v.map(o => [car(t, o.debut), car(t, o.fin)])])),
     rythme: r && [r.phrases, r.moyenne, r.ecartType],
   };
 }

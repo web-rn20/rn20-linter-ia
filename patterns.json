@@ -1,5 +1,20 @@
 [
   {
+    "id": "residus_conversation",
+    "nom": "Résidus de conversation",
+    "famille": "residu",
+    "regex": "\\bj'espère que (?:cela|ceci|ça) (?:vous |t')?(?:aide|aidera|a aidé)|\\b(?:bien sûr|absolument|excellente question|bonne question|avec plaisir)\\s?!|\\bvoici (?:un|une) (?:aperçu|synthèse|résumé|proposition|version (?:révisée|améliorée|corrigée))\\b|\\bsi vous avez d'autres questions\\b|\\bsouhaitez-vous que\\b|\\bvoulez-vous que je\\b|\\bdans cet article,? (?:nous allons|je vais|vous découvrirez|nous verrons)\\b|\\bje suis désolé,? mais je ne peux pas\\b|\\ben tant qu'(?:IA|intelligence artificielle|assistant|modèle de langage)\\b",
+    "flags": "i",
+    "conseil": "Phrase adressée par le chatbot à son utilisateur et restée dans le texte : la supprimer."
+  },
+  {
+    "id": "residus_techniques",
+    "nom": "Résidus techniques",
+    "famille": "residu",
+    "regex": ":?contentReference\\[oaicite:\\d+\\](?:\\{index=\\d+\\})?|\\[oaicite:\\d+\\]|\\[cite(?:_start|_end|:\\s?\\d+(?:,\\s?\\d+)*)\\]|\\bturn\\d+(?:search|news|view|file|image)\\d+\\b|utm_source=(?:chatgpt\\.com|openai|copilot\\.com|perplexity(?:\\.ai)?)|[\\u200B\\u200C\\u200D\\u2060]",
+    "conseil": "Trace laissée par l'outil de génération (renvoi de citation, lien suivi, caractère invisible) : la supprimer avant envoi."
+  },
+  {
     "id": "tirets_longs",
     "nom": "Tirets longs",
     "famille": "typo",
@@ -36,6 +51,22 @@
     "regex": "^#{2,3}\\s",
     "flags": "m",
     "conseil": "Garder peu d'intertitres."
+  },
+  {
+    "id": "pictogrammes",
+    "nom": "Émojis et pictogrammes",
+    "famille": "typo",
+    "regex": "[←-⇿☀-➿⬅-⬇⭐]|[🌀-🫿]",
+    "flags": "u",
+    "conseil": "Pictogramme hérité du chat : le retirer, sauf sur un support qui en a l'usage comme un réseau social."
+  },
+  {
+    "id": "filets",
+    "nom": "Filets horizontaux",
+    "famille": "typo",
+    "regex": "^[ \\t]*(?:-{3,}|\\*{3,}|_{3,})[ \\t]*$",
+    "flags": "m",
+    "conseil": "Séparateur markdown collé tel quel : le supprimer, ou marquer la coupure par un intertitre."
   },
   {
     "id": "deux_points_explicatifs",
@@ -138,6 +169,70 @@
     "conseil": "Impératif en tête de ligne : reformuler en constat."
   },
   {
+    "id": "insistance",
+    "nom": "« il est important de noter que »",
+    "famille": "structure",
+    "regex": "\\bil (?:est|semble) (?:important|essentiel|crucial|primordial|capital|intéressant) de (?:noter|souligner|rappeler|préciser|comprendre|mentionner)\\b|\\bil (?:convient|importe|y a lieu) de (?:noter|souligner|rappeler|préciser|mentionner)\\b|\\bil est à noter\\b",
+    "flags": "i",
+    "conseil": "Annonce qui retarde l'information : retirer la formule et commencer par le fait."
+  },
+  {
+    "id": "decor_epoque",
+    "nom": "« dans un monde où », « à l'ère de »",
+    "famille": "structure",
+    "regex": "\\bdans (?:un|le|notre) monde (?:où|actuel|en (?:constante|perpétuelle|pleine)|qui (?:évolue|change|bouge)|de plus en plus|trépidant|hyperconnecté)|\\bà l'ère (?:de|du|des|numérique)\\b|\\ben (?:constante|perpétuelle|permanente) (?:évolution|mutation)\\b|\\bà un rythme effréné\\b|\\bdans le paysage (?:actuel|numérique|contemporain|concurrentiel|économique|médiatique)\\b",
+    "flags": "i",
+    "conseil": "Toile de fond générique : la retirer, ou la remplacer par la date et le fait qui situent le texte."
+  },
+  {
+    "id": "cloture_recap",
+    "nom": "Conclusions récapitulatives",
+    "famille": "structure",
+    "regex": "(?:^|(?<=[.!?]\\s))(?:en (?:conclusion|résumé|somme|définitive|fin de compte|bref)|au final|pour (?:résumer|conclure)|comme nous l'avons vu)\\b",
+    "flags": "im",
+    "conseil": "Le paragraphe qui redit ce qui précède : finir plutôt sur un fait, une décision ou la suite."
+  },
+  {
+    "id": "participe_apposition",
+    "nom": "Participe présent en apposition",
+    "famille": "structure",
+    "regex": ",\\s(?:soulignant|mettant (?:ainsi )?en (?:lumière|avant|évidence|valeur)|reflétant|symbolisant|témoignant|illustrant|contribuant (?:ainsi )?à|favorisant|renforçant|consolidant|ouvrant (?:ainsi )?la voie)\\b",
+    "flags": "i",
+    "conseil": "Commentaire accroché en fin de phrase : le couper, ou en faire une phrase qui dit qui constate quoi."
+  },
+  {
+    "id": "inflation_portee",
+    "nom": "Inflation de portée",
+    "famille": "structure",
+    "regex": "\\btémoign(?:e|ent|ait|aient|ant) d(?:e\\s|'|u\\s|es\\s)|\\bjou(?:e|ent|ait|aient|ant|era|eront) un rôle (?:clé|crucial|essentiel|majeur|central|déterminant|primordial|moteur)|\\bmarqu(?:e|ent|ait|aient|ant|era) (?:un tournant|une étape (?:clé|décisive|majeure)|un jalon)|\\bune empreinte indélébile\\b|\\bun tournant décisif\\b|\\bpierre angulaire\\b",
+    "flags": "i",
+    "conseil": "Fait ordinaire gonflé en événement : garder le fait, retirer la portée qu'on lui prête."
+  },
+  {
+    "id": "non_seulement",
+    "nom": "« non seulement X, mais aussi Y »",
+    "famille": "structure",
+    "regex": "\\bnon seulement\\b[^.!?\\n]{2,100}?\\bmais (?:aussi|également|encore|surtout)\\b",
+    "flags": "i",
+    "conseil": "Construction en balancier : dire les deux choses en deux phrases simples, ou n'en garder qu'une."
+  },
+  {
+    "id": "defis_perspectives",
+    "nom": "« fait face à des défis »",
+    "famille": "structure",
+    "regex": "\\bfai(?:t|re|sait|saient|sant) face à (?:de nombreux|plusieurs|des|certains|quelques) défis\\b|\\b(?:en dépit de|malgré) ces défis\\b|\\bl'avenir s'annonce (?:prometteur|radieux|brillant)\\b|\\bdéfis et (?:perspectives|opportunités)\\b",
+    "flags": "i",
+    "conseil": "Diptyque obstacle puis optimisme : nommer le problème précis et ce qui a été fait, avec une date."
+  },
+  {
+    "id": "attribution_vague",
+    "nom": "Attributions vagues",
+    "famille": "structure",
+    "regex": "\\b(?:les|des|de nombreux|certains|plusieurs|beaucoup d') ?(?:experts|observateurs|spécialistes|analystes) (?:s'accordent|estiment|soulignent|s'entendent|considèrent)\\b|\\bil est (?:communément|généralement|largement) (?:admis|reconnu|accepté)\\b",
+    "flags": "i",
+    "conseil": "Appui sans source : citer la personne ou le document, ou retirer l'appui."
+  },
+  {
     "id": "selon",
     "nom": "« selon »",
     "famille": "mot",
@@ -224,6 +319,38 @@
     "regex": "\\bagent\\w*",
     "flags": "i",
     "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
+  },
+  {
+    "id": "intensifs",
+    "nom": "« crucial, primordial, incontournable »",
+    "famille": "mot",
+    "regex": "\\b(?:crucia(?:l|le|les|ux)|primordia(?:l|le|les|ux)|incontournables?)\\b",
+    "flags": "i",
+    "conseil": "Adjectif d'insistance très fréquent sous la plume des LLM : le retirer, ou dire en quoi la chose compte."
+  },
+  {
+    "id": "promotionnel",
+    "nom": "Adjectifs de brochure",
+    "famille": "mot",
+    "regex": "\\b(?:holistiques?|disruptif|disruptive|disruptifs|disruptives|révolutionnaires?|captivant(?:e|s|es)?|fascinant(?:e|s|es)?|vibrant(?:e|s|es)?|époustouflant(?:e|s|es)?|niché(?:e|s|es)?)\\b|\\bà couper le souffle\\b",
+    "flags": "i",
+    "conseil": "Vocabulaire de brochure : décrire ce que l'on voit, ou ce qui a changé."
+  },
+  {
+    "id": "calques_anglais",
+    "nom": "Calques de l'anglais",
+    "famille": "mot",
+    "regex": "\\bf(?:aire|ait|aisait|aisaient|aisant|ont) du sens\\b|\\badress(?:er|e|ent|ons|ez|ant|é|ée|és|ées) (?:un|une|le|la|les|ce|cette|ces|des) (?:problèmes?|sujets?|enjeux?|défis?)\\b|\\bune symphonie de\\b|\\bque (?:vous soyez|tu sois) (?:une? )?\\w+ ou\\b|\\bdéverrouill\\w* (?:le|tout le|votre) potentiel\\b",
+    "flags": "i",
+    "conseil": "Tournure traduite de l'anglais : « avoir du sens », « traiter un problème »."
+  },
+  {
+    "id": "plonger",
+    "nom": "« plongeons dans »",
+    "famille": "mot",
+    "regex": "\\bplong(?:er|eons|ez) (?:dans|au c(?:œ|oe)ur)\\b",
+    "flags": "i",
+    "conseil": "Image d'entrée en matière : entrer directement dans le sujet."
   },
   {
     "id": "apostrophes_melangees",

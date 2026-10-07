@@ -45,7 +45,9 @@ Dans une session, `/linter-ia texte.docx` ou une demande en langage naturel suff
 
 ## Ce que le linter mesure
 
-Trente motifs répartis en trois familles, décrits dans [`patterns.json`](patterns.json) avec leur conseil de reprise. Les tournures visent par exemple les définitions par la négation ou les chutes en « pour que ». Les mots-béquilles sont ceux qu'on retrouve très souvent sous la plume des modèles de langage. Côté typographie, le linter relève entre autres les tirets longs et les apostrophes droites mêlées aux courbes.
+Quarante-six motifs répartis en quatre familles, décrits dans [`patterns.json`](patterns.json) avec leur conseil de reprise. Les résidus de génération sont les traces qu'un chatbot laisse dans un texte copié : « J'espère que cela vous aide », renvois `oaicite`, caractères invisibles. Les tournures visent par exemple les définitions par la négation ou les chutes en « pour que ». Les mots-béquilles sont ceux qu'on retrouve très souvent sous la plume des modèles de langage. Côté typographie, le linter relève entre autres les tirets longs et les apostrophes droites mêlées aux courbes.
+
+Les motifs viennent de relectures de textes réels et de catalogues publics, recoupés entre eux : la page [Aide:Identifier l'usage d'une IA générative](https://fr.wikipedia.org/wiki/Aide:Identifier_l%27usage_d%27une_IA_g%C3%A9n%C3%A9rative) de Wikipédia, le skill [humaniseur-fr](https://github.com/samber/cc-skills/tree/main/skills/humaniseur-fr) de Samuel Berthe (MIT) et des relevés publiés par des rédacteurs francophones. Un motif cité par une seule source, ou que l'une d'elles range parmi les marques d'une plume humaine, n'entre pas.
 
 Un indicateur de rythme complète le décompte. Il mesure la longueur des phrases et son écart-type, car une suite de phrases de même longueur se remarque même quand aucun motif ne sort. Il reste hors du total.
 

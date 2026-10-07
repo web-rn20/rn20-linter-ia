@@ -27,14 +27,15 @@ import sys
 import zipfile
 from typing import NamedTuple, Optional
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 FICHIER_MOTIFS = os.path.join(ICI, "patterns.json")
 
 # Lettres du francais : bornes des apostrophes, comme dans web/moteur.js
 LETTRES = "A-Za-zÀ-ÿœŒ"
-DRAPEAUX = {"i": re.IGNORECASE, "m": re.MULTILINE}
+# "u" sert a JavaScript (emojis hors du plan de base) ; Python lit deja l'Unicode
+DRAPEAUX = {"i": re.IGNORECASE, "m": re.MULTILINE, "u": 0}
 APOS_COURBE = re.compile(rf"(?<=[{LETTRES}])’(?=[{LETTRES}])")
 APOS_DROITE = re.compile(rf"(?<=[{LETTRES}])'(?=[{LETTRES}])")
 
