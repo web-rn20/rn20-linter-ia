@@ -14,6 +14,8 @@ Deux motifs à seuil, qui ne sortent qu'au-delà de trois occurrences pour 1000 
 
 Indicateur d'ancrage, hors du total comme le rythme : chiffres et noms propres pour 1000 mots, nombre et longueur des paragraphes, chutes d'une phrase courte après un long paragraphe. Affiché par le script, dans `--json` et dans la page.
 
+Le texte exclu par un commentaire ne compte ni dans le nombre de mots ni dans les indicateurs. Un nom de motif inconnu dans un commentaire est signalé avec sa ligne. Le fichier `.docx` est lu paragraphe par paragraphe, séparés par une ligne vide. L'entrée standard perd son en-tête YAML comme un fichier.
+
 Correction : « de X à Y » ne prend plus le verbe « a » pour la préposition « à » (« le chef de projet a validé » sortait).
 
 ## 0.2.0 (2026-10-07)

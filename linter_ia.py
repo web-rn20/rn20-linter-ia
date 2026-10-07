@@ -54,7 +54,13 @@ MIN_OCCURRENCES_DENSITE = 2
 
 # Ancrage : memes classes que web/moteur.js, sans \d ni \w qui different d'un langage a l'autre
 # "1 200" compte pour un nombre : espace suivie de trois chiffres exactement
-CHIFFRE = re.compile(r"[0-9]+(?:[.,\u00a0\u202f][0-9]+| [0-9]{3}(?![0-9]))*")
+# "2026-10-07" et "07/10/2026" aussi
+CHIFFRE = re.compile(r"[0-9]+(?:[.,/\u00a0\u202f-][0-9]+| [0-9]{3}(?![0-9]))*")
+# Lignes hors prose pour l'ancrage et les paragraphes : intertitres, listes,
+# tableaux, blocs de code, filets, commentaires
+INTERTITRE = re.compile(r"[ \t]*#{1,6}[ \t]")
+MARQUEUR_LISTE = re.compile(r"[ \t]*(?:[-*•]|[0-9]+[.)])[ \t]+")
+HORS_PROSE = re.compile(r"[ \t]*(?:#{1,6}[ \t]|[-*•][ \t]|[0-9]+[.)][ \t]|\||```|<!--|(?:-{3,}|\*{3,}|_{3,})[ \t]*$)")
 NOM_PROPRE = re.compile(
     rf"(?:(?<=[{LETTRES}0-9,;)][ \u00a0])|(?<=[{LETTRES}]'))[A-ZÀ-ÖØ-ÞŒ][{LETTRES}0-9-]*")
 MOTS_MIN_ANCRAGE = 100
@@ -174,13 +180,15 @@ def lire_docx(chemin: str) -> str:
         elif "<w:numPr>" in paragraphe:
             texte = "- " + texte
         lignes.append(texte)
-    return "\n".join(lignes)
+    # ligne vide entre deux paragraphes Word, comme en markdown
+    return "\n\n".join(lignes)
 
 
 def lire(chemin: str) -> str:
     """Lit un fichier .md, .txt ou .docx, ou l'entree standard si chemin vaut "-"."""
     if chemin == "-":
-        return sys.stdin.read()
+        texte = sys.stdin.read()
+        return retirer_front_matter(texte[1:] if texte.startswith("\ufeff") else texte)
     try:
         if chemin.lower().endswith(".docx"):
             return lire_docx(chemin)
@@ -217,6 +225,46 @@ def directives(texte: str) -> list[Directive]:
             for m in DIRECTIVE.finditer(texte)]
 
 
+def masquer(texte: str, dirs: Optional[list] = None) -> str:
+    """Texte a mesurer : commentaires linter-ia et passages coupes par un "off"
+    global remplaces par des blancs, sauts de ligne gardes.
+
+    Les positions ne bougent pas. Le nombre de mots, la densite et les
+    indicateurs se calculent sur ce texte, pas sur le texte exclu.
+    """
+    if dirs is None:
+        dirs = directives(texte)
+    if not dirs:
+        return texte
+    car = list(texte)
+
+    def blanchir(debut: int, fin: int) -> None:
+        for i in range(debut, fin):
+            if car[i] != "\n":
+                car[i] = " "
+
+    coupe_depuis = None
+    for d in dirs:
+        blanchir(d.debut, d.fin)
+        if d.ids:
+            continue
+        if d.off and coupe_depuis is None:
+            coupe_depuis = d.fin
+        elif not d.off and coupe_depuis is not None:
+            blanchir(coupe_depuis, d.debut)
+            coupe_depuis = None
+    if coupe_depuis is not None:
+        blanchir(coupe_depuis, len(texte))
+    return "".join(car)
+
+
+def ids_inconnus(texte: str, motifs: list[dict]) -> list[str]:
+    """Identifiants de motif inconnus dans les commentaires linter-ia, avec leur ligne."""
+    ids = {m["id"] for m in motifs}
+    return [f"l.{texte.count(chr(10), 0, d.debut) + 1} : motif inconnu '{x}' dans un commentaire linter-ia"
+            for d in directives(texte) for x in d.ids if x not in ids]
+
+
 def actif(dirs: list[Directive], id_motif: str, position: int) -> bool:
     """Le motif est-il actif a cette position, d'apres les commentaires qui precedent ?
 
@@ -241,18 +289,22 @@ def actif(dirs: list[Directive], id_motif: str, position: int) -> bool:
     return tout and id_motif not in coupes
 
 
-def occurrences(texte: str, motifs: list[dict]) -> dict[str, list[re.Match]]:
+def occurrences(texte: str, motifs: list[dict], config: Optional[Config] = None) -> dict[str, list[re.Match]]:
     """Occurrences de chaque motif dans le texte, par identifiant de motif.
 
     Les motifs lisent le texte aux apostrophes courbes normalisees, sauf ceux
     marques "brut". La normalisation remplace un caractere par un autre : les
     positions restent valables dans le texte d'origine. Les passages coupes par
-    un commentaire linter-ia sont retires, et un motif a seuil ne garde ses
-    occurrences qu'au-dessus de sa densite maximale.
+    un commentaire linter-ia sont retires, puis ceux que la configuration
+    accepte ou ignore ; un motif a seuil ne garde ensuite ses occurrences
+    qu'au-dessus de sa densite maximale, mesuree sur le texte non exclu.
     """
     normalise = texte.replace("’", "'")
     dirs = directives(texte)
-    mots = compter_mots(texte)
+    mots = compter_mots(masquer(texte, dirs))
+    acceptes = [] if config is None else [
+        (m.start(), m.end()) for expr in config.accepter
+        for m in re.finditer(re.escape(expr.replace("’", "'")), normalise, re.I)]
     resultat = {}
     for motif in motifs:
         if motif.get("special") == "apostrophes":
@@ -260,7 +312,10 @@ def occurrences(texte: str, motifs: list[dict]) -> dict[str, list[re.Match]]:
         else:
             source = texte if motif.get("brut") else normalise
             trouves = list(motif["rx"].finditer(source))
-        trouves = [o for o in trouves if actif(dirs, motif["id"], o.start())]
+        trouves = [o for o in trouves if actif(dirs, motif["id"], o.start())
+                   and not any(o.start() < fin and debut < o.end() for debut, fin in acceptes)]
+        if config is not None and motif["id"] in config.ignorer:
+            trouves = []
         if "densite_max" in motif and not (
                 len(trouves) >= MIN_OCCURRENCES_DENSITE
                 and len(trouves) * 1000 / mots > motif["densite_max"]):
@@ -270,14 +325,19 @@ def occurrences(texte: str, motifs: list[dict]) -> dict[str, list[re.Match]]:
 
 
 def chercher_config(chemin_texte: str) -> Optional[str]:
-    """.linter-ia.json le plus proche, du dossier du texte jusqu'a la racine."""
+    """.linter-ia.json le plus proche, du dossier du texte vers le haut.
+
+    La recherche s'arrete a la racine du depot git qui contient le texte, ou au
+    dossier personnel : une configuration posee plus haut n'est jamais lue.
+    """
     dossier = os.path.abspath(os.path.dirname(chemin_texte) if chemin_texte != "-" else os.getcwd())
+    personnel = os.path.abspath(os.path.expanduser("~"))
     while True:
         candidat = os.path.join(dossier, FICHIER_CONFIG)
         if os.path.isfile(candidat):
             return candidat
         parent = os.path.dirname(dossier)
-        if parent == dossier:
+        if parent == dossier or dossier == personnel or os.path.exists(os.path.join(dossier, ".git")):
             return None
         dossier = parent
 
@@ -306,20 +366,6 @@ def charger_config(chemin: str, motifs: list[dict]) -> Config:
     return Config(chemin, list(brut.get("accepter", [])), list(brut.get("ignorer", [])))
 
 
-def appliquer_config(texte: str, resultat: dict, config: Optional[Config]) -> dict:
-    """Retire les motifs ignores et les occurrences qui touchent une expression acceptee."""
-    if config is None:
-        return resultat
-    normalise = texte.replace("’", "'")
-    acceptes = [(m.start(), m.end()) for expr in config.accepter
-                for m in re.finditer(re.escape(expr.replace("’", "'")), normalise, re.I)]
-    return {
-        id_motif: [] if id_motif in config.ignorer else
-        [o for o in trouves if not any(o.start() < fin and debut < o.end() for debut, fin in acceptes)]
-        for id_motif, trouves in resultat.items()
-    }
-
-
 def rythme(texte: str) -> Optional[Rythme]:
     """Longueur des phrases, ou None sous cinq phrases.
 
@@ -343,11 +389,14 @@ def ancrage(texte: str) -> Optional[Ancrage]:
     ce qui le fait lire comme genere. Un nom propre est un mot a majuscule qui
     n'ouvre pas une phrase. L'indicateur reste hors du total des reperes.
     """
-    mots = compter_mots(texte)
+    # intertitres retires (majuscules de titre) et marqueurs de liste (numeros)
+    corps = "\n".join("" if INTERTITRE.match(l) else MARQUEUR_LISTE.sub("", l, count=1)
+                      if MARQUEUR_LISTE.match(l) else l for l in texte.split("\n"))
+    mots = compter_mots(corps)
     if mots < MOTS_MIN_ANCRAGE:
         return None
-    chiffres = len(CHIFFRE.findall(texte))
-    noms = len(NOM_PROPRE.findall(texte.replace("’", "'")))
+    chiffres = len(CHIFFRE.findall(corps))
+    noms = len(NOM_PROPRE.findall(corps.replace("’", "'")))
     return Ancrage(mots, chiffres, noms, chiffres * 1000 / mots, noms * 1000 / mots)
 
 
@@ -356,10 +405,14 @@ def paragraphes(texte: str) -> Optional[Paragraphes]:
 
     Une chute est un paragraphe d'une phrase de moins de huit mots qui suit un
     paragraphe d'au moins quarante mots : l'effet de clausule des textes
-    generes. Les intertitres et les listes ne comptent pas comme paragraphes.
+    generes. Les lignes d'intertitre, de liste, de tableau, de code, les filets
+    et les commentaires sont retires de chaque bloc avant de le mesurer.
     """
-    blocs = [b for b in re.split(r"\n[ \t]*\n", texte)
-             if compter_mots(b) and not re.match(r"[ \t\n\r]*(?:#|[-*•][ \t])", b)]
+    blocs = []
+    for bloc in re.split(r"\n[ \t]*\n", texte):
+        prose = "\n".join(l for l in bloc.split("\n") if not HORS_PROSE.match(l))
+        if compter_mots(prose):
+            blocs.append(prose)
     if len(blocs) < PARAGRAPHES_MIN:
         return None
     longueurs = [compter_mots(b) for b in blocs]
@@ -402,7 +455,7 @@ def bilan(texte: str, resultat: dict, motifs: list[dict]) -> dict:
     La densite "a reprendre" ne compte que les erreurs et les avertissements :
     c'est elle que --seuil compare.
     """
-    mots = compter_mots(texte)
+    mots = compter_mots(masquer(texte))
     par_niveau = {n: 0 for n in NIVEAUX}
     for motif in motifs:
         par_niveau[motif["niveau"]] += len(resultat[motif["id"]])
@@ -422,15 +475,16 @@ def afficher_bilans(noms: list[str], textes: list[str], bilans: list[dict], conf
         n = b["par_niveau"]
         print(f"densite {nom} : {b['pour_1000_mots']:g} reperes pour 1000 mots sur {b['mots']} mots ; "
               f"{n['erreur']} erreur(s), {n['avertissement']} avertissement(s), {n['info']} info(s)")
-        r = rythme(texte)
+        mesure = masquer(texte)
+        r = rythme(mesure)
         if r:
             print(f"rythme {nom} : {r.phrases} phrases, {r.moyenne:.0f} mots en moyenne, "
                   f"ecart-type {r.ecart_type:.0f} (plus il est faible, plus le texte est regulier)")
-        a = ancrage(texte)
+        a = ancrage(mesure)
         if a:
             print(f"ancrage {nom} : {a.chiffres_pour_1000:.0f} chiffres et {a.noms_pour_1000:.0f} noms propres "
                   f"pour 1000 mots (plus ils sont rares, plus le texte reste en surplomb)")
-        p = paragraphes(texte)
+        p = paragraphes(mesure)
         if p:
             print(f"paragraphes {nom} : {p.nombre}, {p.moyenne:.0f} mots en moyenne, ecart-type "
                   f"{p.ecart_type:.0f}, {p.chutes} chute(s) d'une phrase courte apres un long paragraphe")
@@ -456,7 +510,8 @@ def en_json(noms: list[str], textes: list[str], resultats: list[dict], bilans: l
                     "texte": source[o.start():o.end()], "conseil": motif["conseil"],
                 })
         occ.sort(key=lambda x: (x["debut"], x["fin"]))
-        r, a, p = rythme(texte), ancrage(texte), paragraphes(texte)
+        mesure = masquer(texte)
+        r, a, p = rythme(mesure), ancrage(mesure), paragraphes(mesure)
         sortie.append(dict(
             fichier=nom, **b,
             rythme=r._asdict() if r else None,
@@ -469,8 +524,14 @@ def en_json(noms: list[str], textes: list[str], resultats: list[dict], bilans: l
 
 
 def depasse(bilans: list[dict], seuil: float) -> bool:
-    """Vrai si un texte a une erreur ou plus de `seuil` reperes a reprendre pour 1000 mots."""
-    return any(b["par_niveau"]["erreur"] or b["a_reprendre_pour_1000_mots"] > seuil for b in bilans)
+    """Vrai si un texte a une erreur ou plus de `seuil` reperes a reprendre pour 1000 mots.
+
+    La comparaison porte sur la densite exacte, pas sur la valeur arrondie affichee.
+    """
+    def exacte(b: dict) -> float:
+        n = b["par_niveau"]
+        return (n["erreur"] + n["avertissement"]) * 1000 / b["mots"] if b["mots"] else 0.0
+    return any(b["par_niveau"]["erreur"] or exacte(b) > seuil for b in bilans)
 
 
 def afficher_detail(noms: list[str], textes: list[str], resultats: list[dict], motifs: list[dict]) -> None:
@@ -525,7 +586,10 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(f"linter_ia : {e}", file=sys.stderr)
         return 2
     noms = ["stdin" if f == "-" else os.path.basename(f) for f in args.fichiers]
-    resultats = [appliquer_config(t, occurrences(t, motifs), c) for t, c in zip(textes, configs)]
+    for nom, texte in zip(noms, textes):
+        for message in ids_inconnus(texte, motifs):
+            print(f"linter_ia : {nom} {message}", file=sys.stderr)
+    resultats = [occurrences(t, motifs, c) for t, c in zip(textes, configs)]
     bilans = [bilan(t, r, motifs) for t, r in zip(textes, resultats)]
     if args.json:
         print(en_json(noms, textes, resultats, bilans, configs, motifs))

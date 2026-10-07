@@ -49,7 +49,7 @@ Ici seuls « selon » et « agent » sont coupés.
 <!-- linter-ia on selon agent -->
 ```
 
-Pour tout un projet, un fichier `.linter-ia.json` posé dans le dossier du texte ou dans un dossier parent liste les expressions acceptées et les motifs à ignorer. Une occurrence qui touche une expression acceptée disparaît du compte. Le script indique quelle configuration il a lue ; `--config` en désigne une autre et `--sans-config` les ignore toutes.
+Pour tout un projet, un fichier `.linter-ia.json` posé dans le dossier du texte ou dans un dossier parent, jusqu'à la racine du dépôt git ou du dossier personnel, liste les expressions acceptées et les motifs à ignorer. Une occurrence qui touche une expression acceptée disparaît du compte. Le texte exclu, par un commentaire ou par la configuration, ne compte ni dans les repères ni dans le nombre de mots. Le script indique quelle configuration il a lue, et signale un nom de motif inconnu dans un commentaire ; `--config` en désigne une autre et `--sans-config` les ignore toutes.
 
 ```json
 {

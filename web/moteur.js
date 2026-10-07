@@ -16,7 +16,10 @@
   // Un motif a seuil ("densite_max", pour 1000 mots) ne sort qu'a partir de deux occurrences
   var MIN_OCCURRENCES_DENSITE = 2;
   // Ancrage : memes classes que linter_ia.py
-  var CHIFFRE = /[0-9]+(?:[.,\u00a0\u202f][0-9]+| [0-9]{3}(?![0-9]))*/g;
+  var CHIFFRE = /[0-9]+(?:[.,\/\u00a0\u202f-][0-9]+| [0-9]{3}(?![0-9]))*/g;
+  var INTERTITRE = /^[ \t]*#{1,6}[ \t]/;
+  var MARQUEUR_LISTE = /^[ \t]*(?:[-*•]|[0-9]+[.)])[ \t]+/;
+  var HORS_PROSE = /^[ \t]*(?:#{1,6}[ \t]|[-*•][ \t]|[0-9]+[.)][ \t]|\||```|<!--|(?:-{3,}|\*{3,}|_{3,})[ \t]*$)/;
   var NOM_PROPRE = new RegExp("(?:(?<=[" + L + "0-9,;)][ \u00a0])|(?<=[" + L + "]'))[A-ZÀ-ÖØ-ÞŒ][" + L + "0-9-]*", "g");
   var MOTS_MIN_ANCRAGE = 100, PARAGRAPHES_MIN = 3, CHUTE_APRES = 40, CHUTE_MOTS = 8;
   var PHRASES_MIN_RYTHME = 5;
@@ -49,6 +52,26 @@
     return out;
   }
 
+  // Texte a mesurer : commentaires linter-ia et passages coupes par un "off"
+  // global remplaces par des blancs, sauts de ligne gardes. Meme regle que le script.
+  function masquer(texte, dirs) {
+    dirs = dirs || directives(texte);
+    if (!dirs.length) return texte;
+    var car = texte.split("");
+    function blanchir(debut, fin) {
+      for (var i = debut; i < fin; i++) if (car[i] !== "\n") car[i] = " ";
+    }
+    var coupeDepuis = null;
+    dirs.forEach(function (d) {
+      blanchir(d.debut, d.fin);
+      if (d.ids.length) return;
+      if (d.off && coupeDepuis === null) coupeDepuis = d.fin;
+      else if (!d.off && coupeDepuis !== null) { blanchir(coupeDepuis, d.debut); coupeDepuis = null; }
+    });
+    if (coupeDepuis !== null) blanchir(coupeDepuis, texte.length);
+    return car.join("");
+  }
+
   // "off" seul coupe tout, "on" seul retablit tout ; avec des identifiants,
   // seuls ces motifs sont coupes ou retablis. Le texte du commentaire lui-meme
   // n'est jamais lu. Meme regle que le script.
@@ -70,7 +93,7 @@
 
   function occurrences(texte, motifs) {
     var n = texte.replace(/’/g, "'");
-    var dirs = directives(texte), mots = compterMots(texte);
+    var dirs = directives(texte), mots = compterMots(masquer(texte, dirs));
     var occ = {};
     motifs.forEach(function (m) {
       var trouves;
@@ -101,18 +124,22 @@
   }
 
   function ancrage(texte) {
-    var mots = compterMots(texte);
+    // intertitres retires (majuscules de titre) et marqueurs de liste (numeros)
+    var corps = texte.split("\n").map(function (l) {
+      return INTERTITRE.test(l) ? "" : l.replace(MARQUEUR_LISTE, "");
+    }).join("\n");
+    var mots = compterMots(corps);
     if (mots < MOTS_MIN_ANCRAGE) return null;
-    var chiffres = (texte.match(CHIFFRE) || []).length;
-    var noms = (texte.replace(/’/g, "'").match(NOM_PROPRE) || []).length;
+    var chiffres = (corps.match(CHIFFRE) || []).length;
+    var noms = (corps.replace(/’/g, "'").match(NOM_PROPRE) || []).length;
     return { mots: mots, chiffres: chiffres, nomsPropres: noms,
              chiffresPour1000: chiffres * 1000 / mots, nomsPour1000: noms * 1000 / mots };
   }
 
   function paragraphes(texte) {
-    var blocs = texte.split(/\n[ \t]*\n/).filter(function (b) {
-      return compterMots(b) && !/^[ \t\n\r]*(?:#|[-*•][ \t])/.test(b);
-    });
+    var blocs = texte.split(/\n[ \t]*\n/).map(function (b) {
+      return b.split("\n").filter(function (l) { return !HORS_PROSE.test(l); }).join("\n");
+    }).filter(compterMots);
     if (blocs.length < PARAGRAPHES_MIN) return null;
     var lg = blocs.map(compterMots);
     var moy = lg.reduce(function (a, b) { return a + b; }, 0) / lg.length;
@@ -126,7 +153,7 @@
   }
 
   exporter({ compiler: compiler, occurrences: occurrences, rythme: rythme, compterMots: compterMots,
-            ancrage: ancrage, paragraphes: paragraphes });
+            ancrage: ancrage, paragraphes: paragraphes, masquer: masquer });
 })(typeof module !== "undefined"
   ? function (api) { module.exports = api; }
   : function (api) { window.LinterIA = api; });

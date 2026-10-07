@@ -274,7 +274,7 @@ Le chantier démarre en mars. La fromagerie vend 40 % de sa production sur place
       if (!n) { absents.push(m); return; }
       (parFamille[m.famille] = parFamille[m.famille] || []).push({ m: m, n: n });
     });
-    var mots = API.compterMots(etat.texte);
+    var mots = API.compterMots(API.masquer(etat.texte));
     $("total").textContent = total;
     $("total-libelle").textContent = total > 1 ? "repères" : "repère";
     $("densite").textContent = mots ? nombre.format(total / mots * 1000) + " pour 1000 mots, sur " + mots + " mots" : "";
@@ -302,7 +302,7 @@ Le chantier démarre en mars. La fromagerie vend 40 % de sa production sur place
   }
 
   function rendreRythme() {
-    var r = API.rythme(etat.texte);
+    var r = API.rythme(API.masquer(etat.texte));
     if (!r) {
       $("barres").innerHTML = "";
       $("rythme-texte").textContent = "Mesurable à partir de cinq phrases.";
@@ -317,7 +317,8 @@ Le chantier démarre en mars. La fromagerie vend 40 % de sa production sur place
   }
 
   function rendreAncrage() {
-    var a = API.ancrage(etat.texte), p = API.paragraphes(etat.texte);
+    var mesure = API.masquer(etat.texte);
+    var a = API.ancrage(mesure), p = API.paragraphes(mesure);
     $("ancrage-faits").textContent = a
       ? nombre.format(a.chiffresPour1000) + " chiffres et " + nombre.format(a.nomsPour1000) + " noms propres pour 1000 mots."
       : "Mesurable à partir de cent mots.";

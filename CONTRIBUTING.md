@@ -25,7 +25,7 @@ Merci de votre intérêt. Le projet est en cours de développement : une issue a
 
 Elles sont vérifiées à chaque revue.
 
-- **Le texte analysé ne sort jamais.** On colle dans ce linter des textes non publiés. La page ne fait aucun appel réseau, ne charge aucune ressource externe (ni CDN, ni police, ni statistiques) et ne stocke pas le texte collé. Le script ne lit que les fichiers qu'on lui donne.
+- **Le texte analysé ne sort jamais.** On colle dans ce linter des textes non publiés. La page ne fait aucun appel réseau, ne charge aucune ressource externe (ni CDN, ni police, ni statistiques) et ne stocke pas le texte collé. Le script ne lit que les fichiers qu'on lui donne, plus le `.linter-ia.json` du projet : il le cherche du dossier du texte vers le haut, sans dépasser la racine du dépôt git ni le dossier personnel, et dit lequel il a lu.
 - **Tout texte inséré dans la page est échappé.** Jamais de `innerHTML` sur une chaîne qui contient du texte utilisateur non échappé.
 - **Une seule source de motifs.** Un diff qui touche `patterns.json`, `web/page.html` ou `web/moteur.js` sans régénérer `web/linter-ia.html` est incomplet ; un test le vérifie.
 - **Deux moteurs, mêmes résultats.** `\b` et `\w` sont ASCII en JavaScript et Unicode en Python : `web/moteur.js` les réécrit. Tout motif passe le test de parité, qui compare les positions trouvées par les deux moteurs sur les mêmes textes.
