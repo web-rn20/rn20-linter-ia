@@ -32,6 +32,7 @@ ATTENDUS = {
         "imperatifs": 1, "selon": 1, "il_faut": 1, "vrai": 2, "signal": 1, "utile": 1,
         "enjeu": 1, "de_x_a_y": 1, "agent": 1, "apostrophes_melangees": 3,
     },
+    "cas-corriges.md": {"imperatifs": 1, "utile": 1, "de_x_a_y": 1},
     "exemple-ia.md": {
         "deux_points_explicatifs": 1, "anaphores": 1, "puis_puis": 1, "pas_x_mais_y": 1,
         "ce_n_est_pas": 1, "comme_les_autres": 1, "chute_pour_que": 1, "devient_un_outil": 1,

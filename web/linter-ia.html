@@ -323,7 +323,7 @@ Le chantier démarre en mars. La fromagerie vend 40 % de sa production sur place
   "id": "imperatifs",
   "nom": "Impératifs incitatifs",
   "famille": "structure",
-  "regex": "^\\s*(?:ajoutez|creez|listez|testez|reformulez|auditez|remplacez|commencez|pensez|imaginez)\\b",
+  "regex": "^\\s*(?:ajoutez|cr[eé]ez|listez|testez|reformulez|auditez|remplacez|commencez|pensez|imaginez)\\b",
   "flags": "mi",
   "conseil": "Impératif en tête de ligne : reformuler en constat."
  },
@@ -387,7 +387,7 @@ Le chantier démarre en mars. La fromagerie vend 40 % de sa production sur place
   "id": "utile",
   "nom": "« utile, utilité »",
   "famille": "mot",
-  "regex": "\\butil(?:e|es|ite|iser)\\b",
+  "regex": "\\butil(?:es?|it[eé]s?)\\b",
   "flags": "i",
   "conseil": "Mot fréquent sous la plume des LLM : le supprimer ou le remplacer par le fait qu'il annonce."
  },
@@ -403,7 +403,7 @@ Le chantier démarre en mars. La fromagerie vend 40 % de sa production sur place
   "id": "de_x_a_y",
   "nom": "« de X à Y »",
   "famille": "structure",
-  "regex": "\\bde\\s+\\w+\\s+[aà]\\s+\\w+|\\b(?:du|de la|de l'|des)\\s(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\s(?:[aà]\\s(?:la\\s|l')|aux?\\s)",
+  "regex": "\\bde\\s+(?!\\d)\\w+\\s+[aà]\\s+\\w+|\\b(?:du\\s|de la\\s|de l')(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\s(?:[aà]\\s(?:la\\s|l')|aux?\\s)|\\bdes\\s(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\saux\\s",
   "flags": "i",
   "conseil": "« du premier clic à la commande » : nommer les étapes ou supprimer."
  },
