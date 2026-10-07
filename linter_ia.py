@@ -27,14 +27,15 @@ import sys
 import zipfile
 from typing import NamedTuple, Optional
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 FICHIER_MOTIFS = os.path.join(ICI, "patterns.json")
 
 # Lettres du francais : bornes des apostrophes, comme dans web/moteur.js
-LETTRES = "A-Za-zÀ-ÿœŒ"
-DRAPEAUX = {"i": re.IGNORECASE, "m": re.MULTILINE}
+LETTRES = "A-Za-zÀ-ÖØ-öø-ÿœŒ"
+# "u" sert a JavaScript (emojis hors du plan de base) ; Python lit deja l'Unicode
+DRAPEAUX = {"i": re.IGNORECASE, "m": re.MULTILINE, "u": 0}
 APOS_COURBE = re.compile(rf"(?<=[{LETTRES}])’(?=[{LETTRES}])")
 APOS_DROITE = re.compile(rf"(?<=[{LETTRES}])'(?=[{LETTRES}])")
 
@@ -73,13 +74,20 @@ def charger_motifs(chemin: str = FICHIER_MOTIFS) -> list[dict]:
     return motifs
 
 
+FRONT_MATTER = re.compile(r"---[ \t]*\n[\w-]+:.*\n(?:.*\n)*?---[ \t]*(?:\n|$)")
+
+
 def retirer_front_matter(texte: str) -> str:
-    """Retire l'en-tete YAML (--- ... ---) d'un fichier markdown."""
-    if texte.startswith("---"):
-        parties = texte.split("---", 2)
-        if len(parties) == 3:
-            return parties[2]
-    return texte
+    """Remplace l'en-tete YAML d'un fichier markdown par des lignes vides.
+
+    L'en-tete ouvre le fichier sur "---" suivi d'une ligne "cle:". Un filet en
+    tete de texte reste donc dans le texte. Les lignes vides gardent les numeros
+    de ligne du fichier d'origine.
+    """
+    entete = FRONT_MATTER.match(texte)
+    if not entete:
+        return texte
+    return "\n" * entete.group().count("\n") + texte[entete.end():]
 
 
 def lire_docx(chemin: str) -> str:
@@ -114,7 +122,8 @@ def lire(chemin: str) -> str:
     try:
         if chemin.lower().endswith(".docx"):
             return lire_docx(chemin)
-        with open(chemin, encoding="utf-8") as f:
+        # utf-8-sig : la marque d'ordre d'octets en tete de fichier n'est pas un residu
+        with open(chemin, encoding="utf-8-sig") as f:
             return retirer_front_matter(f.read())
     except FileNotFoundError as e:
         raise ErreurLecture(f"{chemin} : fichier introuvable") from e

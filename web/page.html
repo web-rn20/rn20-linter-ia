@@ -11,6 +11,7 @@
     --st-fond: #fbe2bd; --st-trait: #b0650a;
     --mo-fond: #cdece6; --mo-trait: #0f7469;
     --ty-fond: #ecdcf6; --ty-trait: #7f41ab;
+    --re-fond: #f9d9d5; --re-trait: #b3261e;
     --barre: #8a9591;
     --serif: Charter, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
     --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -24,6 +25,7 @@
       --st-fond: #4a3515; --st-trait: #f0b25a;
       --mo-fond: #15403a; --mo-trait: #6fd2c4;
       --ty-fond: #3a2949; --ty-trait: #c99cea;
+      --re-fond: #4d1f1b; --re-trait: #f2998f;
       --barre: #6d7874;
     }
   }
@@ -34,6 +36,7 @@
     --st-fond: #4a3515; --st-trait: #f0b25a;
     --mo-fond: #15403a; --mo-trait: #6fd2c4;
     --ty-fond: #3a2949; --ty-trait: #c99cea;
+    --re-fond: #4d1f1b; --re-trait: #f2998f;
     --barre: #6d7874;
   }
 
@@ -73,6 +76,7 @@
   mark.f-structure { background: var(--st-fond); box-shadow: inset 0 -2px 0 var(--st-trait); }
   mark.f-mot { background: var(--mo-fond); box-shadow: inset 0 -2px 0 var(--mo-trait); }
   mark.f-typo { background: var(--ty-fond); box-shadow: inset 0 -2px 0 var(--ty-trait); }
+  mark.f-residu { background: var(--re-fond); box-shadow: inset 0 -2px 0 var(--re-trait); }
   .focus mark.m:not(.actif) { background: transparent; box-shadow: none; }
   mark.courant { outline: 2px solid var(--accent); outline-offset: 1px; }
 
@@ -94,6 +98,7 @@
   .f-structure .pastille { background: var(--st-trait); }
   .f-mot .pastille { background: var(--mo-trait); }
   .f-typo .pastille { background: var(--ty-trait); }
+  .f-residu .pastille { background: var(--re-trait); }
   .compte { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--gris); }
   .actif .compte { color: var(--encre); }
   .conseil { margin: 4px 0 8px 20px; font-size: 13px; line-height: 1.45; color: var(--gris); }
@@ -191,6 +196,7 @@ Le chantier démarre en mars. La fromagerie vend 40 % de sa production sur place
   var PAR_ID = {};
   MOTIFS.forEach(function (m) { PAR_ID[m.id] = m; });
   var FAMILLES = [
+    { id: "residu", nom: "Résidus de génération" },
     { id: "structure", nom: "Tournures" },
     { id: "mot", nom: "Mots-béquilles" },
     { id: "typo", nom: "Typographie" }

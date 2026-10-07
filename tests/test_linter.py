@@ -32,6 +32,7 @@ ATTENDUS = {
         "imperatifs": 1, "selon": 1, "il_faut": 1, "vrai": 2, "signal": 1, "utile": 1,
         "enjeu": 1, "de_x_a_y": 1, "agent": 1, "apostrophes_melangees": 3,
     },
+    "cas-corriges.md": {"imperatifs": 1, "utile": 2, "de_x_a_y": 1},
     "exemple-ia.md": {
         "deux_points_explicatifs": 1, "anaphores": 1, "puis_puis": 1, "pas_x_mais_y": 1,
         "ce_n_est_pas": 1, "comme_les_autres": 1, "chute_pour_que": 1, "devient_un_outil": 1,
@@ -39,6 +40,14 @@ ATTENDUS = {
         "de_x_a_y": 1, "apostrophes_melangees": 1,
     },
     "texte-sobre.md": {"tricolons": 1, "surtout": 1},
+    "tics-generation.md": {
+        "residus_conversation": 2, "residus_techniques": 5, "pictogrammes": 5, "filets": 1,
+        "questions": 1, "appel_direct": 1, "insistance": 1, "decor_epoque": 1, "cloture_recap": 1,
+        "participe_apposition": 1, "inflation_portee": 3, "non_seulement": 1,
+        "defis_perspectives": 2, "attribution_vague": 1, "intensifs": 2, "promotionnel": 2,
+        "calques_anglais": 2, "plonger": 1,
+    },
+    "voisins-sans-alerte.md": {},
 }
 
 def comptes(texte):
@@ -62,8 +71,23 @@ class Comptes(unittest.TestCase):
         ids = [m["id"] for m in MOTIFS]
         self.assertEqual(len(ids), len(set(ids)))
         for m in MOTIFS:
-            self.assertIn(m["famille"], {"structure", "mot", "typo"}, m["id"])
+            self.assertIn(m["famille"], {"residu", "structure", "mot", "typo"}, m["id"])
             self.assertTrue(m["nom"] and m["conseil"], m["id"])
+
+class Lecture(unittest.TestCase):
+    def test_front_matter_remplace_par_des_lignes_vides(self):
+        self.assertEqual(linter_ia.retirer_front_matter("---\ntitre: x\n---\nCorps"), "\n\n\nCorps")
+
+    def test_filet_en_tete_n_est_pas_un_front_matter(self):
+        texte = "---\n\nIntro : il est important de noter.\n\n---\n\nCorps."
+        self.assertEqual(linter_ia.retirer_front_matter(texte), texte)
+
+    def test_marque_d_ordre_d_octets_retiree(self):
+        with tempfile.TemporaryDirectory() as d:
+            chemin = os.path.join(d, "bom.md")
+            with open(chemin, "w", encoding="utf-8-sig") as f:
+                f.write("Texte.")
+            self.assertEqual(linter_ia.lire(chemin), "Texte.")
 
 class Docx(unittest.TestCase):
     def test_lecture_sans_dependance(self):
@@ -130,12 +154,14 @@ class Parite(unittest.TestCase):
 const api = require(process.argv[1]);
 const motifs = api.compiler(require(process.argv[2]));
 const textes = JSON.parse(require("fs").readFileSync(0, "utf8"));
+// positions JavaScript en unites UTF-16, ramenees en caracteres comme en Python
+const car = (t, i) => Array.from(t.slice(0, i)).length;
 const out = {};
 for (const [nom, t] of Object.entries(textes)) {
   const occ = api.occurrences(t, motifs);
   const r = api.rythme(t);
   out[nom] = {
-    occ: Object.fromEntries(Object.entries(occ).map(([k, v]) => [k, v.map(o => [o.debut, o.fin])])),
+    occ: Object.fromEntries(Object.entries(occ).map(([k, v]) => [k, v.map(o => [car(t, o.debut), car(t, o.fin)])])),
     rythme: r && [r.phrases, r.moyenne, r.ecartType],
   };
 }

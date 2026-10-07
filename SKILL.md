@@ -18,7 +18,11 @@ sans rien installer, et ne modifie jamais le texte qu'il lit.
    - PDF : demander la version Word ou le texte, le script ne lit pas les PDF.
 2. Donner le bilan en quelques lignes : le total, les trois motifs les plus
    fréquents, le rythme des phrases. Pas le tableau complet.
-3. Proposer les retouches passage par passage, en commençant par les tournures
+3. Signaler d'abord les résidus de génération (phrases du chatbot, renvois
+   `oaicite`, caractères invisibles). Les traces techniques se suppriment ; une
+   phrase de chatbot se vérifie dans son contexte, car un vrai courrier peut
+   l'employer. Proposer
+   ensuite les retouches passage par passage, en commençant par les tournures
    (« pas X, mais Y », « ce n'est pas…, c'est… », « n'est pas un X comme les autres »,
    anaphores, chutes en « , pour que… », « devient un outil de… »), puis les
    mots-béquilles. Pour chaque passage : la phrase d'origine, la retouche, et une

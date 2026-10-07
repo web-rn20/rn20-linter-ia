@@ -4,7 +4,7 @@
 // les memes passages aux memes positions.
 (function (exporter) {
   "use strict";
-  var L = "A-Za-zÀ-ÿœŒ";
+  var L = "A-Za-zÀ-ÖØ-öø-ÿœŒ";
   var MOT = "[" + L + "0-9_]";
   // \b et \w sont ASCII en JavaScript, Unicode en Python : on les remplace
   var LIMITE = "(?:(?<=" + MOT + ")(?!" + MOT + ")|(?<!" + MOT + ")(?=" + MOT + "))";

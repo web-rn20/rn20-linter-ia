@@ -16,7 +16,7 @@ Merci de votre intérêt. Le projet est en cours de développement : une issue a
 
 ## Ajouter ou modifier un motif
 
-1. Modifier `patterns.json`. Chaque motif a un `id` unique, un `nom`, une `famille` (`structure`, `mot` ou `typo`), une `regex`, des `flags` facultatifs (`i`, `m`) et un `conseil`. La même regex est lue par Python et par JavaScript : pas de drapeau en ligne comme `(?i)`, passer par `flags`. Un motif qui doit voir les apostrophes courbes telles quelles porte `"brut": true`.
+1. Modifier `patterns.json`. Chaque motif a un `id` unique, un `nom`, une `famille` (`residu`, `structure`, `mot` ou `typo`), une `regex`, des `flags` facultatifs (`i`, `m`, `u`) et un `conseil`. Le drapeau `u` sert aux émojis hors du plan de base : JavaScript en a besoin, Python l'ignore. La même regex est lue par Python et par JavaScript : pas de drapeau en ligne comme `(?i)`, passer par `flags`. Un motif qui doit voir les apostrophes courbes telles quelles porte `"brut": true`.
 2. Ajouter dans `tests/fixtures/` une phrase qui déclenche le motif, et une qui ne doit pas le déclencher si le risque de faux positif est réel. Mettre à jour les comptes attendus dans `tests/test_linter.py`.
 3. Régénérer la page : `python3 build_web.py`. Le fichier `web/linter-ia.html` ne se modifie jamais à la main.
 4. Lancer les tests : `python3 tests/test_linter.py`. Le test de parité entre le script et la page demande `node` ; sans lui, il est sauté en local, mais il tourne toujours dans la CI.
