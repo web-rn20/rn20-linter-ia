@@ -1,0 +1,68 @@
+{
+  "seuil": 15,
+  "humain": {
+    "nom": "Wikipédia FR, version d'octobre 2022",
+    "textes": [
+      {
+        "titre": "Agriculture biologique",
+        "oldid": 197966255
+      },
+      {
+        "titre": "Viticulture",
+        "oldid": 197903427
+      },
+      {
+        "titre": "Blé tendre",
+        "oldid": 196918956
+      },
+      {
+        "titre": "Maïs",
+        "oldid": 197662480
+      },
+      {
+        "titre": "Irrigation",
+        "oldid": 195575590
+      },
+      {
+        "titre": "Politique agricole commune",
+        "oldid": 197295029
+      },
+      {
+        "titre": "Coopérative agricole",
+        "oldid": 195696784
+      },
+      {
+        "titre": "Élevage bovin",
+        "oldid": 198035464
+      },
+      {
+        "titre": "Agroforesterie",
+        "oldid": 197818501
+      },
+      {
+        "titre": "Semis direct",
+        "oldid": 197965033
+      },
+      {
+        "titre": "Tournesol",
+        "oldid": 197647016
+      },
+      {
+        "titre": "Betterave sucrière",
+        "oldid": 197609141
+      },
+      {
+        "titre": "Conchyliculture",
+        "oldid": 195871644
+      },
+      {
+        "titre": "Agroécologie",
+        "oldid": 194434056
+      },
+      {
+        "titre": "Fromage",
+        "oldid": 197767336
+      }
+    ]
+  }
+}

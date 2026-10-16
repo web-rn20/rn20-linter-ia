@@ -84,6 +84,32 @@ Deux motifs, les connecteurs en tête de phrase (« En outre », « Par ailleurs
 
 Deux indicateurs complètent le décompte et restent hors du total. Le rythme mesure la longueur des phrases et son écart-type, car une suite de phrases de même longueur se remarque même quand aucun motif ne sort. L'ancrage compte les chiffres et les noms propres pour 1000 mots, avec la longueur des paragraphes et les chutes, ces paragraphes d'une phrase courte posés après un long pour l'effet. Un brouillon généré qu'on a enrichi de dates, de montants et de noms se lit beaucoup moins comme tel qu'un texte resté général, même retouché phrase par phrase.
 
+## Banc d'essai
+
+Un linter qui relève n'importe quel texte ne sert à rien. Pour le vérifier, on le passe sur quinze articles agricoles de Wikipédia en français, écrits sans IA puisque pris dans leur version d'octobre 2022, un mois avant la sortie de ChatGPT. Le dépôt garde leurs numéros de révision dans [`banc/corpus.json`](banc/corpus.json). Le script retélécharge les textes et refait les tableaux.
+
+```sh
+python3 outils/banc.py telecharger
+python3 outils/banc.py mesurer
+```
+
+| Source | Textes | Mots | Médiane à reprendre / 1000 mots | Maximum | Au-dessus de 15,0 |
+|---|---:|---:|---:|---:|---:|
+| Wikipédia FR, version d'octobre 2022 | 15 | 86 104 | 2,5 | 4,5 | 0 sur 15 |
+
+Motifs les plus fréquents sur ces textes, erreurs et avertissements, en occurrences pour 1000 mots :
+
+| Motif | Wikipédia FR, version d'octobre 2022 |
+|---|---:|
+| « de X à Y » | 1,3 |
+| Tirets longs | 0,2 |
+| « pas X, mais Y » | 0,2 |
+| « ce n'est pas…, c'est… » | 0,1 |
+
+Avec `--seuil 15`, aucun de ces quinze textes n'est bloqué. La version 0.3.0 en bloquait huit : un article écrit à plusieurs mêle apostrophes droites et courbes, et « de X à Y » prenait toute suite de prépositions, comme « de façon à » ou « de l'azote grâce aux ». Les deux motifs ont été corrigés en 0.3.1 à partir de ce banc. « de X à Y » reste le plus fréquent sur ces textes humains.
+
+Ces articles ont un style encyclopédique. Ils disent combien de repères sort un texte humain soigné, pas comment se comporte une note commerciale ou un billet de blog. La suite du banc reprendra les mêmes sujets, rédigés par plusieurs modèles sur une même consigne, pour voir quels motifs séparent les deux colonnes et caler les seuils.
+
 ## Ce qu'il ne dit pas
 
 Le linter compte des tics visibles à l'œil. Il ne dit pas qui a écrit un texte. Un texte sans aucun repère peut rester plat, et un détecteur d'IA, qui juge un style d'ensemble, peut le classer autrement. Le score aide à relire ; il ne certifie rien.

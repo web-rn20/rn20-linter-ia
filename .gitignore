@@ -27,3 +27,6 @@ __pycache__/
 
 # corps de page genere par build_web.py --artifact
 dist/
+
+# banc d essai : textes Wikipedia retelecharges par outils/banc.py (licence CC BY-SA)
+banc/cache/

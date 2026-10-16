@@ -20,3 +20,9 @@ La cave ouvre également le dimanche.
 Le chef de projet a validé le plan.
 Le fichier de configuration a été lu.
 Le chef de l'équipe a la main sur le stock.
+La parcelle est arrosée de façon à limiter les pertes.
+La foire se tient du 3 au 5 mai.
+Le colza profite de l'azote grâce aux légumineuses.
+Le lot passe de cinq à huit palettes.
+Une aide de l'État proportionnelle aux surfaces a été votée.
+Le banc de test à l'atelier a cassé.
