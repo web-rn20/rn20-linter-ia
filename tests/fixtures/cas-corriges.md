@@ -5,3 +5,4 @@ Son utilité tient en une ligne.
 Créez un compte avant lundi.
 Le parcours va de l'usine à la cave.
 Le barème note ×utile× en marge.
+La filière s'organise des producteurs aux distributeurs.

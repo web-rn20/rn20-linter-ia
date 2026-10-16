@@ -13,6 +13,10 @@ Merci de votre intérêt. Le projet est en cours de développement : une issue a
 | `web/linter-ia.html` | Page autonome générée par `build_web.py`, publiée sur GitHub Pages |
 | `SKILL.md` | Instructions du skill Claude Code |
 | `tests/` | Tests et textes d'essai |
+| `outils/banc.py` | Banc d'essai : mesure le linter sur les textes de `banc/` et produit les tableaux du README |
+| `banc/corpus.json` | Révisions Wikipédia du banc d'essai et seuil mesuré ; les textes eux-mêmes restent dans `banc/cache/`, ignoré par git |
+
+Après une modification de motif, `python3 outils/banc.py mesurer` dit ce qu'elle change sur des textes humains. Si les chiffres bougent, mettre à jour les tableaux du README. Ce script est le seul du dépôt qui appelle le réseau : il télécharge des pages publiques de Wikipédia et n'envoie aucun texte.
 
 ## Ajouter ou modifier un motif
 

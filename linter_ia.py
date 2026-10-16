@@ -32,7 +32,7 @@ import sys
 import zipfile
 from typing import NamedTuple, Optional
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 FICHIER_MOTIFS = os.path.join(ICI, "patterns.json")

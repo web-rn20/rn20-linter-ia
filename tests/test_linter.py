@@ -32,7 +32,7 @@ ATTENDUS = {
         "imperatifs": 1, "selon": 1, "il_faut": 1, "vrai": 2, "signal": 1, "utile": 1,
         "enjeu": 1, "de_x_a_y": 1, "agent": 1, "apostrophes_melangees": 3,
     },
-    "cas-corriges.md": {"imperatifs": 1, "utile": 2, "de_x_a_y": 1},
+    "cas-corriges.md": {"imperatifs": 1, "utile": 2, "de_x_a_y": 2},
     "exclusions-et-densite.md": {"selon": 2, "il_faut": 2, "connecteurs": 3, "egalement_notamment": 3},
     "exemple-ia.md": {
         "deux_points_explicatifs": 1, "anaphores": 1, "puis_puis": 1, "pas_x_mais_y": 1,

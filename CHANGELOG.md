@@ -2,6 +2,12 @@
 
 Le projet suit le [versionnage sémantique](https://semver.org/lang/fr/). Tant qu'il reste en 0.x, les motifs, leurs comptes et le format de sortie peuvent changer d'une version à l'autre.
 
+## 0.3.1 (2026-10-16)
+
+Banc d'essai : `outils/banc.py` passe le linter sur quinze articles agricoles de Wikipédia en français, dans leur version d'octobre 2022. Les résultats sont dans le README. Sur ces textes humains, la 0.3.0 dépassait le seuil de 15 repères à reprendre pour 1000 mots dans huit cas sur quinze ; la 0.3.1 n'en bloque aucun.
+
+Corrections tirées de ce banc. « Apostrophes mélangées » passe d'avertissement à info : un texte écrit à plusieurs mêle les deux sans rien devoir à une IA, et chaque apostrophe minoritaire pesait dans le seuil. « de X à Y » ne part plus des dates (« du 3 au 5 mai »), des nombres en lettres (« de cinq à huit »), de « de façon à » et des mots qui appellent « à » (« grâce aux », « par rapport aux », « propice à »). Son premier terme compte au plus trois mots, et « à l' » ne suffit plus à fermer la forme courte (« banc de test à l'atelier »).
+
 ## 0.3.0 (2026-10-07)
 
 Chaque motif porte un niveau : erreur pour les résidus de génération, avertissement pour les tournures franchement typées, info pour les mots fréquents et la mise en forme. Le script donne pour chaque fichier la densité de repères pour 1000 mots et leur répartition par niveau ; la page affiche aussi sa densité pour 1000 mots.

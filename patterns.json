@@ -357,7 +357,7 @@
     "nom": "« de X à Y »",
     "famille": "structure",
     "niveau": "avertissement",
-    "regex": "\\bde\\s+(?!\\d)(?!\\w+(?:er|ir|re|oir)\\b)\\w+\\s+à\\s+\\w+|\\b(?:du\\s|de la\\s|de l')(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\s(?:à\\s(?:la\\s|l')|aux?\\s)|\\bdes\\s(?:(?!\\bet\\b)[^,.;:!?\\n]){2,40}?\\saux\\s",
+    "regex": "\\bde\\s+(?!\\d)(?!(?:\\w+(?:er|ir|re|oir)|façon|manière|sorte|un|deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze|douze|quinze|vingt|trente|quarante|cinquante|soixante|cent|mille|quelques)\\b)\\w+\\s+à\\s+\\w\\w+(?!['\\w])|\\b(?:du\\s|de la\\s|de l')(?!\\d)(?:(?!(?:grâce|quant|face|rapport|propice|dûe?s?|due?s?|destinée?s?|consacrée?s?|relati(?:f|ve)s?|liée?s?|associée?s?|adaptée?s?|résistante?s?|sensibles?|conformes?|aptes?|nécessaires?|proportionnel\\w*|jusqu|et|est|sont|façon|manière|sorte)\\b)(?:\\w|['-])+\\s){1,3}?(?:à\\s(?:la\\s|l')|aux?\\s)|\\bdes\\s(?:(?!(?:grâce|quant|face|rapport|propice|dûe?s?|due?s?|destinée?s?|consacrée?s?|relati(?:f|ve)s?|liée?s?|associée?s?|adaptée?s?|résistante?s?|sensibles?|conformes?|aptes?|nécessaires?|proportionnel\\w*|jusqu|et|est|sont|façon|manière|sorte)\\b)(?:\\w|['-])+\\s){1,3}?aux\\s",
     "flags": "i",
     "conseil": "« du premier clic à la commande » : nommer les étapes ou supprimer."
   },
@@ -420,7 +420,7 @@
     "id": "apostrophes_melangees",
     "nom": "Apostrophes mélangées",
     "famille": "typo",
-    "niveau": "avertissement",
+    "niveau": "info",
     "special": "apostrophes",
     "conseil": "Droites et courbes dans le même texte : la frontière entre texte tapé et texte collé se voit. Remplacement global dans Word."
   }
